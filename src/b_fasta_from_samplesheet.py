@@ -4,8 +4,14 @@ import os
 
 def main():
     # Set up argument parser
-    parser = argparse.ArgumentParser(description="Process a samplesheet in TSV format.")
-    parser.add_argument('samplesheet', type=str, help='Path to the samplesheet TSV file')  # Add samplesheet argument
+    parser = argparse.ArgumentParser(
+        description="Process a samplesheet in TSV format and generate FASTA files for forward and reverse barcodes."
+    )
+    parser.add_argument(
+        'samplesheet', 
+        type=str, 
+        help='Path to the samplesheet TSV file containing sample names and barcodes'
+    )
 
     args = parser.parse_args()
 
