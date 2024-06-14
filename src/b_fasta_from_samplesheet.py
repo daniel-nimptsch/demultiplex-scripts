@@ -20,7 +20,8 @@ def main():
             barcodes.append((sample_name, forward_barcode, reverse_barcode))  # Store the extracted values
         
         # Define the output FASTA file names
-        samplesheet_base = samplesheet.rsplit('.', 1)[0]  # Remove the file extension
+        import os
+        samplesheet_base = os.path.splitext(os.path.basename(samplesheet))[0]  # Remove the path and file extension
         forward_fasta = f"{samplesheet_base}_bc_fwd.fasta"
         reverse_fasta = f"{samplesheet_base}_bc_rev.fasta"
 
