@@ -1,4 +1,5 @@
 import argparse
+import csv
 
 def main():
     parser = argparse.ArgumentParser(description="Process a samplesheet in CSV format.")
@@ -7,7 +8,10 @@ def main():
     args = parser.parse_args()
 
     samplesheet = args.samplesheet
-    # Add your processing logic here
+    with open(samplesheet, mode='r') as file:
+        csv_reader = csv.DictReader(file)
+        for row in csv_reader:
+            print(row)  # Replace this with your actual processing logic
 
 if __name__ == "__main__":
     main()
