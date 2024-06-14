@@ -5,12 +5,12 @@ import os
 def main():
     # Set up argument parser
     parser = argparse.ArgumentParser(
-        description="Samplesheet in TSV format and generate FASTA files for forward and reverse barcodes for demultiplexing with cutadapt."
+        description="Samplesheet (TSV) to FASTA converter with forward and reverse barcodes for demultiplexing with cutadapt."
     )
     parser.add_argument(
         'samplesheet', 
         type=str, 
-        help='Path to the samplesheet TSV file containing sample names and barcodes'
+        help='Path to the samplesheet TSV containing sample names and barcodes'
     )
 
     args = parser.parse_args()
@@ -34,8 +34,8 @@ def main():
         # Write the barcodes to the respective FASTA files
         with open(forward_fasta, 'w') as fwd_file, open(reverse_fasta, 'w') as rev_file:
             for sample_name, forward_barcode, reverse_barcode in barcodes:
-                fwd_file.write(f">{sample_name}_fwd\n{forward_barcode}\n")  # Write forward barcode
-                rev_file.write(f">{sample_name}_rev\n{reverse_barcode}\n")  # Write reverse barcode
+                fwd_file.write(f">{sample_name}\n{forward_barcode}\n")  # Write forward barcode
+                rev_file.write(f">{sample_name}\n{reverse_barcode}\n")  # Write reverse barcode
 
 if __name__ == "__main__":
     main()
