@@ -9,7 +9,7 @@ def main():
 
     samplesheet = args.samplesheet
     with open(samplesheet, mode='r') as file:
-        csv_reader = csv.DictReader(file, delimiter='\t')
+        csv_reader = csv.reader(file, delimiter='\t')
         for row in csv_reader:
             print(row)  # Replace this with your actual processing logic
 
