@@ -20,8 +20,9 @@ def main():
             barcodes.append((sample_name, forward_barcode, reverse_barcode))  # Store the extracted values
         
         # Define the output FASTA file names
-        forward_fasta = f"{samplesheet}_bc_fwd.fasta"
-        reverse_fasta = f"{samplesheet}_bc_rev.fasta"
+        samplesheet_base = samplesheet.rsplit('.', 1)[0]  # Remove the file extension
+        forward_fasta = f"{samplesheet_base}_bc_fwd.fasta"
+        reverse_fasta = f"{samplesheet_base}_bc_rev.fasta"
 
         # Write the barcodes to the respective FASTA files
         with open(forward_fasta, 'w') as fwd_file, open(reverse_fasta, 'w') as rev_file:
