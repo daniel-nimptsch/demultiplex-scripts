@@ -3,7 +3,7 @@ import csv
 import os
 
 
-def run_cutadapt(forward_fasta, reverse_fasta, fq_gz_1, fq_gz_2):
+def run_cutadapt(forward_fasta, reverse_fasta, fq_gz_1, fq_gz_2, output_dir):
     """
     Execute the cutadapt command with the given parameters.
     """
@@ -11,8 +11,8 @@ def run_cutadapt(forward_fasta, reverse_fasta, fq_gz_1, fq_gz_2):
         f"cutadapt -e 2 --pair-adapters --cores=0 "
         f"-g ^file:{forward_fasta} "
         f"-G ^file:{reverse_fasta} "
-        f"-o 'demux-{{name}}_R1.fastq.gz' "
-        f"-p 'demux-{{name}}_R2.fastq.gz' "
+        f"-o '{output_dir}/demux-{{name}}_R1.fastq.gz' "
+        f"-p '{output_dir}/demux-{{name}}_R2.fastq.gz' "
         f"{fq_gz_1} "
         f"{fq_gz_2} "
     )
@@ -78,7 +78,7 @@ def main():
                 rev_file.write(f">{sample_name}\n{reverse_barcode}\n")  # Write reverse barcode
 
         # Run cutadapt with the generated FASTA files and provided FASTQ files
-        run_cutadapt(forward_fasta, reverse_fasta, fq_gz_1, fq_gz_2)
+        run_cutadapt(forward_fasta, reverse_fasta, fq_gz_1, fq_gz_2, output_dir)
 
 
 if __name__ == "__main__":
