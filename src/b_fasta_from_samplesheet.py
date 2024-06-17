@@ -36,7 +36,7 @@ def main():
         help='Path to the second FASTQ file (R2)'
     )
     parser.add_argument(
-        '--output', 
+        '-o', '--output', 
         type=str, 
         default='.', 
         help='Directory to save the output FASTA files (default: ./)'
