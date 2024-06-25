@@ -43,7 +43,7 @@ def run_cutadapt(
             f"{fq_gz_2} "
         )
 
-    run_command(command)
+    run_command(command, output_dir)
 
 
 def main():
