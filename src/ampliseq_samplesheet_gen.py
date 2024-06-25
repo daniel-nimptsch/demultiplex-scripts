@@ -18,8 +18,14 @@ def main():
         return
 
     filenames = os.listdir(args.directory)
+    sample_names = set()
     for filename in filenames:
-        print(filename)
+        if filename.startswith("demux-") and filename.endswith(".fastq.gz"):
+            sample_name = filename.split("_R")[0].replace("demux-", "")
+            sample_names.add(sample_name)
+    
+    for sample_name in sample_names:
+        print(sample_name)
 
 
 if __name__ == "__main__":
