@@ -43,7 +43,12 @@ def main():
     parser.add_argument(
         "samplesheet",
         type=str,
-        help="Path to the samplesheet TSV containing sample names and barcodes. This samplesheet is expected to be a tsv. So the columns need to be tab delimied. Aditionally it is expected to have the following format: Firest column is the sample_name, second contains fwd barcode but space delimited. First is the barcode then the used primer. The same applies to  the third column but it is the rev barcode and primer.",
+        help=(
+            "Path to the samplesheet TSV containing sample names and barcodes. "
+            "The samplesheet should be tab-delimited with the following format: "
+            "First column is the sample name, second column contains the forward barcode and primer "
+            "(space-delimited), and the third column contains the reverse barcode and primer (space-delimited)."
+        ),
     )
 
     args = parser.parse_args()
