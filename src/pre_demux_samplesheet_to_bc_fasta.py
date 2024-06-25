@@ -40,6 +40,7 @@ def parse_samplesheet(csv_reader, include_primers):
 
     return barcodes
 
+if __name__ == "__main__":
     parser = argparse.ArgumentParser(
         description=(
             "Generate FASTA files from a samplesheet (TSV) containing sample names and barcodes. "

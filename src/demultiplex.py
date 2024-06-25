@@ -40,7 +40,16 @@ def main():
         help="Path to the reverse FASTA file containing barcodes",
     )
 
+    parser.add_argument(
+        "-o",
+        "--output",
+        type=str,
+        default=".",
+        help="Directory to save the output demultiplexed FASTQ files (default: ./)",
+    )
+
     args = parser.parse_args()
+
 
     run_cutadapt(args.forward_fasta, args.reverse_fasta, args.fq_gz_1, args.fq_gz_2, args.output)
 
