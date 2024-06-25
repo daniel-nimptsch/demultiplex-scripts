@@ -13,7 +13,7 @@ fi
 for file in "$input_dir"/*.fastq.gz; do
     if [ -f "$file" ]; then
         # Extract the read count
-        read_count=$(zcat "$file" | grep -c '^@')
+        read_count=$(zcat "$file" | rg -c '^@')
 
         # Print the filename and the read count, delimited by a tab
         echo -e "$file\t$read_count"
