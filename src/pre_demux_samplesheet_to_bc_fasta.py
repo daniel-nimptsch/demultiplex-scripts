@@ -2,6 +2,7 @@ import argparse
 import csv
 from pathlib import Path
 
+
 def create_fasta_from_samplesheet(samplesheet_path, output_dir):
     """
     Create FASTA files from the samplesheet.
@@ -29,6 +30,7 @@ def create_fasta_from_samplesheet(samplesheet_path, output_dir):
                 rev_file.write(f">{sample_name}\n{reverse_barcode}\n")
 
     return forward_fasta, reverse_fasta
+
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
