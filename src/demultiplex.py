@@ -23,7 +23,7 @@ def run_cutadapt(
     """
     if combinatorial:
         command = (
-            f"cutadapt -e 0.15 --no-indels --cores=0 "
+            f"cutadapt -e 3 --no-indels --cores=0 "
             f"-revcomp "
             f"-g ^file:{forward_fasta} "
             f"-G ^file:{reverse_fasta} "
