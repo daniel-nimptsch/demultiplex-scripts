@@ -34,8 +34,8 @@ def parse_samplesheet(csv_reader, include_primers):
 
     for row in csv_reader:
         sample_name = row[0]
-        forward_barcode = row[1].split(" ")[0] if not include_primers else row[1]
-        reverse_barcode = row[2].split(" ")[0] if not include_primers else row[2]
+        forward_barcode = row[1].replace(" ", "") if include_primers else row[1].split(" ")[0]
+        reverse_barcode = row[2].replace(" ", "") if include_primers else row[2].split(" ")[0]
         barcodes.append((sample_name, forward_barcode, reverse_barcode))
 
     return barcodes
