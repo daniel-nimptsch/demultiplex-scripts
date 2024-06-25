@@ -17,6 +17,7 @@ def main():
         print(f"Directory {args.directory} does not exist.")
         return
 
+    print("sampleID,forwardReads,reverseReads")
     filenames = os.listdir(args.directory)
     sample_dict = {}
     for filename in filenames:
@@ -26,10 +27,14 @@ def main():
                 if sample_name not in sample_dict:
                     sample_dict[sample_name] = {"R1": None, "R2": None}
                 if "_R1" in filename:
-                    sample_dict[sample_name]["R1"] = os.path.join(args.directory, filename)
+                    sample_dict[sample_name]["R1"] = os.path.join(
+                        args.directory, filename
+                    )
                 elif "_R2" in filename:
-                    sample_dict[sample_name]["R2"] = os.path.join(args.directory, filename)
-    
+                    sample_dict[sample_name]["R2"] = os.path.join(
+                        args.directory, filename
+                    )
+
     for sample_name, paths in sample_dict.items():
         if paths["R1"] and paths["R2"]:
             print(f"{sample_name},{paths['R1']},{paths['R2']}")
