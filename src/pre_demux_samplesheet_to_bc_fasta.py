@@ -51,7 +51,8 @@ def parse_samplesheet(csv_reader, include_primers):
     parser.add_argument(
         "--include-primers",
         action="store_true",
-        help="Include primers in the barcodes saved to the FASTA files",
+        help="Include primers in the barcodes saved to the FASTA files (default: False)",
+        default=False,
     )
     parser.add_argument("samplesheet", type=str, help="Path to the samplesheet TSV")
     parser.add_argument(
