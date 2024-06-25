@@ -18,15 +18,21 @@ def main():
         return
 
     filenames = os.listdir(args.directory)
-    sample_names = set()
+    sample_dict = {}
     for filename in filenames:
         if filename.startswith("demux-") and filename.endswith(".fastq.gz"):
             sample_name = filename.split("_R")[0].replace("demux-", "")
             if sample_name.lower() != "unknown":
-                sample_names.add(sample_name)
+                if sample_name not in sample_dict:
+                    sample_dict[sample_name] = {"R1": None, "R2": None}
+                if "_R1" in filename:
+                    sample_dict[sample_name]["R1"] = os.path.join(args.directory, filename)
+                elif "_R2" in filename:
+                    sample_dict[sample_name]["R2"] = os.path.join(args.directory, filename)
     
-    for sample_name in sample_names:
-        print(sample_name)
+    for sample_name, paths in sample_dict.items():
+        if paths["R1"] and paths["R2"]:
+            print(f"{sample_name},{paths['R1']},{paths['R2']}")
 
 
 if __name__ == "__main__":
