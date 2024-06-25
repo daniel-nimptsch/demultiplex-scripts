@@ -15,11 +15,14 @@ def run_cutadapt(forward_fasta, reverse_fasta, fq_gz_1, fq_gz_2, output_dir):
         f"-p '{output_dir}/demux-{{name}}_R2.fastq.gz' "
         f"{fq_gz_1} "
         f"{fq_gz_2} "
+        f"--revcomp "
     )
 
     log_file = os.path.join(output_dir, "cutadapt.log")
     with open(log_file, "w") as log:
-        process = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+        process = subprocess.Popen(
+            command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT
+        )
         for line in process.stdout:
             print(line.decode(), end="")
             log.write(line.decode())
@@ -57,8 +60,9 @@ def main():
 
     args = parser.parse_args()
 
-
-    run_cutadapt(args.forward_fasta, args.reverse_fasta, args.fq_gz_1, args.fq_gz_2, args.output)
+    run_cutadapt(
+        args.forward_fasta, args.reverse_fasta, args.fq_gz_1, args.fq_gz_2, args.output
+    )
 
 
 if __name__ == "__main__":
