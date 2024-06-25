@@ -3,7 +3,7 @@ import csv
 from pathlib import Path
 
 
-def create_fasta_from_samplesheet(samplesheet_path, output_dir):
+def create_fasta_from_samplesheet(samplesheet_path, output_dir, include_primers):
     """
     Create FASTA files from the samplesheet.
     """
@@ -13,13 +13,7 @@ def create_fasta_from_samplesheet(samplesheet_path, output_dir):
 
     with samplesheet.open(mode="r") as file:
         csv_reader = csv.reader(file, delimiter="\t")
-        barcodes = []
-
-        for row in csv_reader:
-            sample_name = row[0]
-            forward_barcode = row[1].split(" ")[0]
-            reverse_barcode = row[2].split(" ")[0]
-            barcodes.append((sample_name, forward_barcode, reverse_barcode))
+        barcodes = parse_samplesheet(csv_reader, include_primers)
 
         forward_fasta = output_dir / "barcodes_fwd.fasta"
         reverse_fasta = output_dir / "barcodes_bc_rev.fasta"
@@ -32,7 +26,20 @@ def create_fasta_from_samplesheet(samplesheet_path, output_dir):
     return forward_fasta, reverse_fasta
 
 
-if __name__ == "__main__":
+def parse_samplesheet(csv_reader, include_primers):
+    """
+    Parse the samplesheet and return a list of barcodes.
+    """
+    barcodes = []
+
+    for row in csv_reader:
+        sample_name = row[0]
+        forward_barcode = row[1].split(" ")[0] if not include_primers else row[1]
+        reverse_barcode = row[2].split(" ")[0] if not include_primers else row[2]
+        barcodes.append((sample_name, forward_barcode, reverse_barcode))
+
+    return barcodes
+
     parser = argparse.ArgumentParser(
         description=(
             "Generate FASTA files from a samplesheet (TSV) containing sample names and barcodes. "
@@ -40,6 +47,11 @@ if __name__ == "__main__":
             "First column is the sample name, second column contains the forward barcode and primer "
             "(space-delimited), and the third column contains the reverse barcode and primer (space-delimited)."
         )
+    )
+    parser.add_argument(
+        "--include-primers",
+        action="store_true",
+        help="Include primers in the barcodes saved to the FASTA files",
     )
     parser.add_argument("samplesheet", type=str, help="Path to the samplesheet TSV")
     parser.add_argument(
@@ -51,4 +63,4 @@ if __name__ == "__main__":
     )
 
     args = parser.parse_args()
-    create_fasta_from_samplesheet(args.samplesheet, args.output)
+    create_fasta_from_samplesheet(args.samplesheet, args.output, args.include_primers)
