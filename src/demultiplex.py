@@ -23,7 +23,13 @@ def run_cutadapt(forward_fasta, reverse_fasta, fq_gz_1, fq_gz_2, output_dir):
 def main():
     # Set up argument parser
     parser = argparse.ArgumentParser(
-        description="Demultiplex fastq: Samplesheet (TSV) to FASTA converter with forward and reverse barcodes with subsequent demultiplexing with cutadapt."
+        description=(
+            "Demultiplex FASTQ files using a samplesheet (TSV) to generate FASTA files "
+            "containing forward and reverse barcodes, followed by demultiplexing with cutadapt. "
+            "The samplesheet should be tab-delimited with the following format: "
+            "First column is the sample name, second column contains the forward barcode and primer "
+            "(space-delimited), and the third column contains the reverse barcode and primer (space-delimited)."
+        )
     )
     parser.add_argument("fq_gz_1", type=str, help="Path to the first FASTQ file (R1)")
     parser.add_argument("fq_gz_2", type=str, help="Path to the second FASTQ file (R2)")
