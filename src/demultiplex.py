@@ -1,5 +1,6 @@
 import argparse
 import os
+import subprocess
 
 
 def run_cutadapt(forward_fasta, reverse_fasta, fq_gz_1, fq_gz_2, output_dir):
@@ -16,7 +17,13 @@ def run_cutadapt(forward_fasta, reverse_fasta, fq_gz_1, fq_gz_2, output_dir):
         f"{fq_gz_2} "
     )
 
-    os.system(command)
+    log_file = os.path.join(output_dir, "cutadapt.log")
+    with open(log_file, "w") as log:
+        process = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+        for line in process.stdout:
+            print(line.decode(), end="")
+            log.write(line.decode())
+        process.wait()
 
 
 def main():
