@@ -1,6 +1,5 @@
 import argparse
 import os
-from pre_demux_samplesheet_to_bc_fasta import create_fasta_from_samplesheet
 
 
 def run_cutadapt(forward_fasta, reverse_fasta, fq_gz_1, fq_gz_2, output_dir):
@@ -24,37 +23,26 @@ def main():
     # Set up argument parser
     parser = argparse.ArgumentParser(
         description=(
-            "Demultiplex FASTQ files using a samplesheet (TSV) to generate FASTA files "
-            "containing forward and reverse barcodes, followed by demultiplexing with cutadapt. "
-            "The samplesheet should be tab-delimited with the following format: "
-            "First column is the sample name, second column contains the forward barcode and primer "
-            "(space-delimited), and the third column contains the reverse barcode and primer (space-delimited)."
+            "Demultiplex FASTQ files using forward and reverse FASTA files containing barcodes, "
+            "followed by demultiplexing with cutadapt."
         )
     )
     parser.add_argument("fq_gz_1", type=str, help="Path to the first FASTQ file (R1)")
     parser.add_argument("fq_gz_2", type=str, help="Path to the second FASTQ file (R2)")
     parser.add_argument(
-        "-o",
-        "--output",
+        "forward_fasta",
         type=str,
-        default=".",
-        help="Directory to save the output FASTA files (default: ./)",
+        help="Path to the forward FASTA file containing barcodes",
     )
     parser.add_argument(
-        "samplesheet",
+        "reverse_fasta",
         type=str,
-        help=(
-            "Path to the samplesheet TSV containing sample names and barcodes. "
-            "The samplesheet should be tab-delimited with the following format: "
-            "First column is the sample name, second column contains the forward barcode and primer "
-            "(space-delimited), and the third column contains the reverse barcode and primer (space-delimited)."
-        ),
+        help="Path to the reverse FASTA file containing barcodes",
     )
 
     args = parser.parse_args()
 
-    forward_fasta, reverse_fasta = create_fasta_from_samplesheet(args.samplesheet, args.output)
-    run_cutadapt(forward_fasta, reverse_fasta, args.fq_gz_1, args.fq_gz_2, args.output)
+    run_cutadapt(args.forward_fasta, args.reverse_fasta, args.fq_gz_1, args.fq_gz_2, args.output)
 
 
 if __name__ == "__main__":
