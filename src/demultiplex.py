@@ -24,13 +24,13 @@ def run_cutadapt(
     if combinatorial:
         command = (
             f"cutadapt -e 0.15 --no-indels --cores=0 "
+            f"-revcomp "
             f"-g ^file:{forward_fasta} "
             f"-G ^file:{reverse_fasta} "
             f"-o '{output_dir}/demux-{{name1}}-{{name2}}_R1.fastq.gz' "
             f"-p '{output_dir}/demux-{{name1}}-{{name2}}_R2.fastq.gz' "
             f"{fq_gz_1} "
             f"{fq_gz_2} "
-            f"--revcomp "
         )
     else:
         command = (
@@ -79,14 +79,19 @@ def main():
         "-c",
         "--combinatorial",
         action="store_true",
-        help="Use combinatorial dual indexes for demultiplexing paired-end reads (default: False)",
+        help="Use combinatorial dual indexes for demultiplexing paired-end reads (default: False). In the default case demultiplexing unique dual indices is executed.",
         default=False,
     )
 
     args = parser.parse_args()
 
     run_cutadapt(
-        args.forward_fasta, args.reverse_fasta, args.fq_gz_1, args.fq_gz_2, args.combinatorial, args.output
+        args.forward_fasta,
+        args.reverse_fasta,
+        args.fq_gz_1,
+        args.fq_gz_2,
+        args.combinatorial,
+        args.output,
     )
 
 
