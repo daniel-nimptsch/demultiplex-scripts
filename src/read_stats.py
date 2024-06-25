@@ -1,18 +1,20 @@
 import sys
 
 def main():
-    if len(sys.argv) != 2:
-        print("Usage: python read_stats.py <input_file>")
+    if len(sys.argv) > 2:
+        print("Usage: python read_stats.py [<input_file>]")
         sys.exit(1)
 
-    input_file = sys.argv[1]
-
-    try:
-        with open(input_file, 'r') as f:
-            lines = f.readlines()
-    except FileNotFoundError:
-        print(f"File {input_file} not found.")
-        sys.exit(1)
+    if len(sys.argv) == 2:
+        input_file = sys.argv[1]
+        try:
+            with open(input_file, 'r') as f:
+                lines = f.readlines()
+        except FileNotFoundError:
+            print(f"File {input_file} not found.")
+            sys.exit(1)
+    else:
+        lines = sys.stdin.readlines()
 
     total_reads = 0
     data = []
