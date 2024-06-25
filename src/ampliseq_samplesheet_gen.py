@@ -22,7 +22,8 @@ def main():
     for filename in filenames:
         if filename.startswith("demux-") and filename.endswith(".fastq.gz"):
             sample_name = filename.split("_R")[0].replace("demux-", "")
-            sample_names.add(sample_name)
+            if sample_name.lower() != "unknown":
+                sample_names.add(sample_name)
     
     for sample_name in sample_names:
         print(sample_name)
