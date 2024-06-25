@@ -75,10 +75,18 @@ def main():
         help="Directory to save the output demultiplexed FASTQ files (default: ./)",
     )
 
+    parser.add_argument(
+        "-c",
+        "--combinatorial",
+        action="store_true",
+        help="Use combinatorial dual indexes for demultiplexing paired-end reads (default: False)",
+        default=False,
+    )
+
     args = parser.parse_args()
 
     run_cutadapt(
-        args.forward_fasta, args.reverse_fasta, args.fq_gz_1, args.fq_gz_2, args.output
+        args.forward_fasta, args.reverse_fasta, args.fq_gz_1, args.fq_gz_2, args.combinatorial, args.output
     )
 
 
