@@ -9,6 +9,7 @@ def parse_samplesheet(samplesheet_path):
     """
 
     samplesheet = Path(samplesheet_path)
+    barcodes = []
     with samplesheet.open(mode="r") as file:
         csv_reader = csv.reader(file, delimiter="\t")
         for row in csv_reader:
