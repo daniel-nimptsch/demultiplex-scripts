@@ -11,13 +11,13 @@ python src/demultiplex.py \
     -o data/demultiplex \
     -c
 
-cat data/demultiplex/patterns.txt | python src/rename_files.py
+cat data/demultiplex/patterns.txt | python src/patterns_copy.py
 
-bash src/get_reads_from_fastqs_in_dir.sh data/demultiplex | \
-    python src/reads_stats_from_tsv.py > data/demultiplex/cutadapt_reads.tsv
+bash src/dir_to_reads_tsv.sh data/demultiplex | \
+    python src/reads_stats.py > data/demultiplex/cutadapt_reads.tsv
 
-bash src/get_reads_from_fastqs_in_dir.sh data/demultiplex/renamed | \
-    python src/reads_stats_from_tsv.py > data/demultiplex/sample_reads.tsv
+bash src/dir_to_reads_tsv.sh data/demultiplex/renamed | \
+    python src/reads_stats.py > data/demultiplex/sample_reads.tsv
 
 python src/ampliseq_samplesheet_gen.py data/demultiplex/renamed > \
     data/demultiplex/renamed/sample_sheet.csv
