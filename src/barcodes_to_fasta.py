@@ -4,10 +4,7 @@ import sys
 import csv
 
 
-def create_fasta(samplesheet_file, output_dir, include_primers):
-    """
-    Create FASTA files from the samplesheet.
-    """
+def parse_samplesheet(samplesheet_file):
     barcodes = []
     if samplesheet_file == sys.stdin:
         csv_reader = csv.reader(samplesheet_file, delimiter="\t")
@@ -17,12 +14,12 @@ def create_fasta(samplesheet_file, output_dir, include_primers):
             csv_reader = csv.reader(file, delimiter="\t")
     for row in csv_reader:
         sample_name = row[0]
-        forward_barcode = row[1].split(" ")[0]
-        reverse_barcode = row[2].split(" ")[0]
+        forward_barcode = row[1]
+        reverse_barcode = row[2]
         forward_barcode_name = row[3]
         reverse_barcode_name = row[4]
-        forward_primer = row[1].split(" ")[1]
-        reverse_primer = row[2].split(" ")[1]
+        forward_primer = row[5]
+        reverse_primer = row[6]
         barcodes.append(
             (
                 sample_name,
@@ -34,6 +31,13 @@ def create_fasta(samplesheet_file, output_dir, include_primers):
                 reverse_primer,
             )
         )
+        return barcodes
+
+
+def create_fasta(barcodes, output_dir, include_primers):
+    """
+    Create FASTA files from the samplesheet.
+    """
     output_dir.mkdir(parents=True, exist_ok=True)
 
     forward_fasta = output_dir / "barcodes_fwd.fasta"
@@ -65,7 +69,8 @@ def main():
             Generate FASTA files from a samplesheet (TSV) containing sample
             names and barcodes. The samplesheet should be tab-delimited with
             the following format: sample name, forward barcode, reverse
-            barcode, forward primer and reverse primer.
+            barcode, forward barcode name, reverse barcode name,forward primer
+            and reverse primer.
             """
         )
     )
@@ -76,8 +81,11 @@ def main():
         default=False,
     )
     parser.add_argument(
-        "samplesheet", nargs="?", type=argparse.FileType('r'), default=sys.stdin,
-        help="Path to the samplesheet TSV (default: stdin)"
+        "samplesheet",
+        nargs="?",
+        type=argparse.FileType("r"),
+        default=sys.stdin,
+        help="Path to the samplesheet TSV (default: stdin)",
     )
     parser.add_argument(
         "-o",
@@ -89,7 +97,8 @@ def main():
 
     args = parser.parse_args()
 
-    create_fasta(args.samplesheet, args.output, args.include_primers)
+    barcodes = parse_samplesheet(args.samplesheet)
+    create_fasta(barcodes, args.output, args.include_primers)
 
 
 if __name__ == "__main__":
