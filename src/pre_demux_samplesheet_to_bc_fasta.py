@@ -1,5 +1,6 @@
 import argparse
 from pathlib import Path
+from parse_samplesheet_novogene import parse_samplesheet
 
 
 def create_fasta(barcodes, output_dir, include_primers):
@@ -30,6 +31,10 @@ def create_fasta(barcodes, output_dir, include_primers):
 
     return forward_fasta, reverse_fasta
 
+
+def create_fasta_from_samplesheet(samplesheet_path, output_dir, include_primers):
+    barcodes = parse_samplesheet(samplesheet_path)
+    return create_fasta(barcodes, output_dir, include_primers)
 
 def main():
     parser = argparse.ArgumentParser(
