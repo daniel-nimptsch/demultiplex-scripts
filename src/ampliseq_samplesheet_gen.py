@@ -18,14 +18,13 @@ def main():
             """,
     )
     parser.add_argument(
-        "-o", "--output",
+        "-o",
+        "--output",
         type=str,
-        help="The output file to write the sample sheet to. If not provided, output will be printed to the console.",
-    )
-    parser.add_argument(
-        "-o", "--output",
-        type=str,
-        help="The output file to write the sample sheet to. If not provided, output will be printed to the console.",
+        help="""
+            The output file to write the sample sheet to. If not provided, output
+            will be printed to the console.
+            """,
     )
     args = parser.parse_args()
 

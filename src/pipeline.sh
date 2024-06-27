@@ -21,3 +21,5 @@ bash src/get_reads_from_fastqs_in_dir.sh data/demultiplex/renamed | \
 
 python src/ampliseq_samplesheet_gen.py data/demultiplex/renamed > \
     data/demultiplex/renamed/sample_sheet.csv
+
+python src/ampliseq_samplesheet_gen.py data/demultiplex/renamed > samplesheet.csv
