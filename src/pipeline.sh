@@ -11,7 +11,8 @@ python src/demultiplex.py \
     -o data/demultiplex \
     -c
 
-cat data/demultiplex/patterns.txt | python src/patterns_copy.py -o data/demultiplex/demux_renamed
+cat data/demultiplex/patterns.txt | \
+    python src/patterns_copy.py -o data/demultiplex/demux_renamed
 
 mkdir data/demultiplex/work
 mv data/demultiplex/*.fastq.gz data/demultiplex/work/
