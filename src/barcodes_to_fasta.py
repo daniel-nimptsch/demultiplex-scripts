@@ -31,7 +31,7 @@ def parse_samplesheet(samplesheet_file):
                 reverse_primer,
             )
         )
-        return barcodes
+    return barcodes
 
 
 def create_fasta(barcodes, output_dir, include_primers):
