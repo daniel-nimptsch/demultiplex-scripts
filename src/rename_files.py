@@ -1,16 +1,18 @@
 import argparse
 import sys
-import os
+from pathlib import Path
 
 
 def rename_files(patterns):
     for pattern in patterns:
         old_name, new_name = pattern.strip().split()
-        if os.path.exists(old_name):
-            os.rename(old_name, new_name)
-            print(f"Renamed {old_name} to {new_name}")
+        old_path = Path(old_name)
+        new_path = Path(new_name)
+        if old_path.exists():
+            old_path.rename(new_path)
+            print(f"Renamed {old_path} to {new_path}")
         else:
-            print(f"File {old_name} does not exist")
+            print(f"File {old_path} does not exist")
 
 
 def main():
