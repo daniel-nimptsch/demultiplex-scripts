@@ -62,6 +62,25 @@ def create_fasta(barcodes, output_dir, include_primers):
     return forward_fasta, reverse_fasta
 
 
+def save_patterns(barcodes, output_dir):
+    """
+    Save demultiplexing patterns to a file.
+    """
+    patterns_file = output_dir / "patterns.txt"
+    with patterns_file.open("w") as file:
+        for (
+            sample_name,
+            forward_barcode,
+            reverse_barcode,
+            forward_barcode_name,
+            reverse_barcode_name,
+            forward_primer,
+            reverse_primer,
+        ) in barcodes:
+            pattern = f"demux-{forward_barcode_name}_{reverse_barcode_name}.[12].fastq.gz {sample_name}.#1.fastq.gz"
+            file.write(f"{pattern}\n")
+
+
 def main():
     parser = argparse.ArgumentParser(
         description=(
@@ -98,7 +117,9 @@ def main():
     args = parser.parse_args()
 
     barcodes = parse_samplesheet(args.samplesheet)
-    create_fasta(barcodes, args.output, args.include_primers)
+    output_dir = Path(args.output)
+    create_fasta(barcodes, output_dir, args.include_primers)
+    save_patterns(barcodes, output_dir)
 
 
 if __name__ == "__main__":
