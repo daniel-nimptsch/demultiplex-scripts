@@ -1,6 +1,7 @@
 import argparse
 import sys
 from pathlib import Path
+import shutil
 
 
 def rename_files(patterns):
@@ -9,7 +10,7 @@ def rename_files(patterns):
         old_path = Path(old_name)
         new_path = Path(new_name)
         if old_path.exists():
-            old_path.rename(new_path)
+            shutil.copy(old_path, new_path)
         else:
             print(f"File {old_path} does not exist")
 
