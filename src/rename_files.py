@@ -2,6 +2,7 @@ import argparse
 import sys
 import os
 
+
 def rename_files(patterns):
     for pattern in patterns:
         old_name, new_name = pattern.strip().split()
@@ -10,6 +11,7 @@ def rename_files(patterns):
             print(f"Renamed {old_name} to {new_name}")
         else:
             print(f"File {old_name} does not exist")
+
 
 def main():
     parser = argparse.ArgumentParser(
@@ -25,10 +27,9 @@ def main():
 
     args = parser.parse_args()
 
-    if args.patterns == sys.stdin:
-        print("Reading patterns from stdin...")
     patterns = args.patterns.readlines()
     rename_files(patterns)
+
 
 if __name__ == "__main__":
     main()
