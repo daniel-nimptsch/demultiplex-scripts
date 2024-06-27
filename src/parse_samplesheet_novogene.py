@@ -1,12 +1,12 @@
 from pathlib import Path
+import argparse
 import csv
 
 
 def parse_samplesheet(samplesheet_path):
     """
-    Parse the samplesheet and return a list of barcodes.
+    Parse the samplesheet and print barcodes in TSV format.
     """
-    barcodes = []
 
     samplesheet = Path(samplesheet_path)
     with samplesheet.open(mode="r") as file:
@@ -31,4 +31,15 @@ def parse_samplesheet(samplesheet_path):
                 )
             )
 
-    return barcodes
+    for barcode in barcodes:
+        print("\t".join(barcode))
+def main():
+    parser = argparse.ArgumentParser(description="Parse a samplesheet and print barcodes in TSV format.")
+    parser.add_argument("samplesheet_path", type=str, help="Path to the samplesheet file")
+    args = parser.parse_args()
+
+    parse_samplesheet(args.samplesheet_path)
+
+
+if __name__ == "__main__":
+    main()
