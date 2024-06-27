@@ -10,7 +10,6 @@ def rename_files(patterns):
         new_path = Path(new_name)
         if old_path.exists():
             old_path.rename(new_path)
-            print(f"Renamed {old_path} to {new_path}")
         else:
             print(f"File {old_path} does not exist")
 
