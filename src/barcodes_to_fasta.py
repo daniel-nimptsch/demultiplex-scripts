@@ -67,6 +67,8 @@ def save_patterns(barcodes, output_dir):
     Save demultiplexing patterns to a file.
     """
     patterns_file = output_dir / "patterns.txt"
+    renamed_dir = output_dir / "renamed"
+    renamed_dir.mkdir(parents=True, exist_ok=True)
     with patterns_file.open("w") as file:
         for (
             sample_name,
@@ -77,8 +79,8 @@ def save_patterns(barcodes, output_dir):
             forward_primer,
             reverse_primer,
         ) in barcodes:
-            pattern_1 = f"{output_dir}/demux-{forward_barcode_name}-{reverse_barcode_name}.1.fastq.gz {output_dir}/{sample_name}.1.fastq.gz"
-            pattern_2 = f"{output_dir}/demux-{forward_barcode_name}-{reverse_barcode_name}.2.fastq.gz {output_dir}/{sample_name}.2.fastq.gz"
+            pattern_1 = f"{output_dir}/demux-{forward_barcode_name}-{reverse_barcode_name}.1.fastq.gz {renamed_dir}/{sample_name}.1.fastq.gz"
+            pattern_2 = f"{output_dir}/demux-{forward_barcode_name}-{reverse_barcode_name}.2.fastq.gz {renamed_dir}/{sample_name}.2.fastq.gz"
             file.write(f"{pattern_1}\n")
             file.write(f"{pattern_2}\n")
 
