@@ -1,12 +1,39 @@
 import argparse
 from pathlib import Path
+import sys
+import csv
 
 
-def create_fasta(barcodes, output_dir, include_primers):
+def create_fasta(samplesheet_file, output_dir, include_primers):
     """
     Create FASTA files from the samplesheet.
     """
-    output_dir = Path(output_dir)
+    barcodes = []
+    if samplesheet_file == sys.stdin:
+        csv_reader = csv.reader(samplesheet_file, delimiter="\t")
+    else:
+        samplesheet = Path(samplesheet_file)
+        with samplesheet.open(mode="r") as file:
+            csv_reader = csv.reader(file, delimiter="\t")
+    for row in csv_reader:
+        sample_name = row[0]
+        forward_barcode = row[1].split(" ")[0]
+        reverse_barcode = row[2].split(" ")[0]
+        forward_barcode_name = row[3]
+        reverse_barcode_name = row[4]
+        forward_primer = row[1].split(" ")[1]
+        reverse_primer = row[2].split(" ")[1]
+        barcodes.append(
+            (
+                sample_name,
+                forward_barcode,
+                reverse_barcode,
+                forward_barcode_name,
+                reverse_barcode_name,
+                forward_primer,
+                reverse_primer,
+            )
+        )
     output_dir.mkdir(parents=True, exist_ok=True)
 
     forward_fasta = output_dir / "barcodes_fwd.fasta"
@@ -48,7 +75,10 @@ def main():
         help="Include primers in the barcodes saved to the FASTA files (default: False)",
         default=False,
     )
-    parser.add_argument("samplesheet", type=str, help="Path to the samplesheet TSV")
+    parser.add_argument(
+        "samplesheet", nargs="?", type=argparse.FileType('r'), default=sys.stdin,
+        help="Path to the samplesheet TSV (default: stdin)"
+    )
     parser.add_argument(
         "-o",
         "--output",
@@ -59,9 +89,7 @@ def main():
 
     args = parser.parse_args()
 
-    args.samplesheet
-    args.output
-    args.include_primers
+    create_fasta(args.samplesheet, args.output, args.include_primers)
 
 
 if __name__ == "__main__":
