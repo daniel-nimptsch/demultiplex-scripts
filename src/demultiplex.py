@@ -23,22 +23,23 @@ def run_cutadapt(
     """
     if combinatorial:
         command = (
-            f"cutadapt -e 3 --no-indels --cores=0 "
-            f"-revcomp "
+            f"cutadapt -e 0.14 --no-indels --cores=0 "
+            f"--revcomp "
             f"-g ^file:{forward_fasta} "
             f"-G ^file:{reverse_fasta} "
-            f"-o '{output_dir}/demux-{{name1}}-{{name2}}_R1.fastq.gz' "
-            f"-p '{output_dir}/demux-{{name1}}-{{name2}}_R2.fastq.gz' "
+            f"-o '{output_dir}/demux-{{name1}}-{{name2}}.1.fastq.gz' "
+            f"-p '{output_dir}/demux-{{name1}}-{{name2}}.2.fastq.gz' "
             f"{fq_gz_1} "
             f"{fq_gz_2} "
         )
     else:
         command = (
-            f"cutadapt -e 2 --pair-adapters --cores=0 "
+            f"cutadapt -e 0.14 --no-indels --pair-adapters --cores=0 "
+            f"--revcomp "
             f"-g ^file:{forward_fasta} "
             f"-G ^file:{reverse_fasta} "
-            f"-o '{output_dir}/demux-{{name}}_R1.fastq.gz' "
-            f"-p '{output_dir}/demux-{{name}}_R2.fastq.gz' "
+            f"-o '{output_dir}/demux-{{name}}.1.fastq.gz' "
+            f"-p '{output_dir}/demux-{{name}}.2.fastq.gz' "
             f"{fq_gz_1} "
             f"{fq_gz_2} "
         )
