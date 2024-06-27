@@ -21,8 +21,8 @@ def main():
     filenames = os.listdir(args.directory)
     sample_dict = {}
     for filename in filenames:
-        if filename.startswith("demux-") and filename.endswith(".fastq.gz"):
-            sample_name = filename.split("_R")[0].replace("demux-", "")
+        if filename.endswith(".fastq.gz"):
+            sample_name = filename.split(".")[0]
             if sample_name.lower() != "unknown":
                 if sample_name not in sample_dict:
                     sample_dict[sample_name] = {"R1": None, "R2": None}
