@@ -17,28 +17,59 @@ def main():
             format: {sample_name}_R{1,2}.fastq.gz
             """,
     )
+    parser.add_argument(
+        "-o", "--output",
+        type=str,
+        help="The output file to write the sample sheet to. If not provided, output will be printed to the console.",
+    )
     args = parser.parse_args()
 
     if not os.path.isdir(args.directory):
         print(f"Directory {args.directory} does not exist.")
-        return
+        exit(1)
 
-    print("sampleID,forwardReads,reverseReads")
-    filenames = os.listdir(args.directory)
+    output = []
+    output.append("sampleID,forwardReads,reverseReads")
+    sample_dict = parse_directory(args.directory)
+    output = generate_output(sample_dict)
+
+    if args.output:
+        with open(args.output, "w") as f:
+            f.write("\n".join(output) + "\n")
+    else:
+        print("\n".join(output))
+
+
+def parse_directory(directory):
     sample_dict = {}
-    for filename in filenames:
+    for filename in os.listdir(directory):
         if filename.endswith(".fastq.gz"):
-            sample_name = filename.split(".")[0]
+            sample_name = "_".join(filename.split("_")[:-1])
             if sample_name not in sample_dict:
                 sample_dict[sample_name] = {"R1": None, "R2": None}
             if "_R1" in filename:
-                sample_dict[sample_name]["R1"] = os.path.join(args.directory, filename)
+                sample_dict[sample_name]["R1"] = os.path.join(directory, filename)
             elif "_R2" in filename:
-                sample_dict[sample_name]["R2"] = os.path.join(args.directory, filename)
+                sample_dict[sample_name]["R2"] = os.path.join(directory, filename)
+    return sample_dict
+
+
+def generate_output(sample_dict):
+    output = ["sampleID,forwardReads,reverseReads"]
+    for sample_name, paths in sample_dict.items():
+        if paths["R1"] and paths["R2"]:
+            output.append(f"{sample_name},{paths['R1']},{paths['R2']}")
+    return output
 
     for sample_name, paths in sample_dict.items():
         if paths["R1"] and paths["R2"]:
-            print(f"{sample_name},{paths['R1']},{paths['R2']}")
+            output.append(f"{sample_name},{paths['R1']},{paths['R2']}")
+
+    if args.output:
+        with open(args.output, "w") as f:
+            f.write("\n".join(output) + "\n")
+    else:
+        print("\n".join(output))
 
 
 if __name__ == "__main__":
