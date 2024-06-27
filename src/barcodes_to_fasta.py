@@ -1,6 +1,5 @@
 import argparse
 from pathlib import Path
-from parse_samplesheet_novogene import parse_samplesheet
 
 
 def create_fasta(barcodes, output_dir, include_primers):
@@ -32,17 +31,15 @@ def create_fasta(barcodes, output_dir, include_primers):
     return forward_fasta, reverse_fasta
 
 
-def create_fasta_from_samplesheet(samplesheet_path, output_dir, include_primers):
-    barcodes = parse_samplesheet(samplesheet_path)
-    return create_fasta(barcodes, output_dir, include_primers)
-
 def main():
     parser = argparse.ArgumentParser(
         description=(
-            "Generate FASTA files from a samplesheet (TSV) containing sample names and barcodes. "
-            "The samplesheet should be tab-delimited with the following format: "
-            "First column is the sample name, second column contains the forward barcode and primer "
-            "(space-delimited), and the third column contains the reverse barcode and primer (space-delimited)."
+            """
+            Generate FASTA files from a samplesheet (TSV) containing sample
+            names and barcodes. The samplesheet should be tab-delimited with
+            the following format: sample name, forward barcode, reverse
+            barcode, forward primer and reverse primer.
+            """
         )
     )
     parser.add_argument(
@@ -61,7 +58,10 @@ def main():
     )
 
     args = parser.parse_args()
-    create_fasta_from_samplesheet(args.samplesheet, args.output, args.include_primers)
+
+    args.samplesheet
+    args.output
+    args.include_primers
 
 
 if __name__ == "__main__":

@@ -34,9 +34,15 @@ def parse_samplesheet(samplesheet_path):
 
     for barcode in barcodes:
         print("\t".join(barcode))
+
+
 def main():
-    parser = argparse.ArgumentParser(description="Parse a samplesheet and print barcodes in TSV format.")
-    parser.add_argument("samplesheet_path", type=str, help="Path to the samplesheet file")
+    parser = argparse.ArgumentParser(
+        description="Parse a samplesheet and print barcodes in TSV format."
+    )
+    parser.add_argument(
+        "samplesheet_path", type=str, help="Path to the samplesheet file"
+    )
     args = parser.parse_args()
 
     parse_samplesheet(args.samplesheet_path)
