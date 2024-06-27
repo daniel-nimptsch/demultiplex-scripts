@@ -1,64 +1,34 @@
 import argparse
-import csv
 from pathlib import Path
 
 
-def create_fasta_from_samplesheet(samplesheet_path, output_dir, include_primers):
+def create_fasta(barcodes, output_dir, include_primers):
     """
     Create FASTA files from the samplesheet.
     """
-    samplesheet = Path(samplesheet_path)
     output_dir = Path(output_dir)
     output_dir.mkdir(parents=True, exist_ok=True)
 
-    with samplesheet.open(mode="r") as file:
-        csv_reader = csv.reader(file, delimiter="\t")
-        barcodes = parse_samplesheet(csv_reader, include_primers)
+    forward_fasta = output_dir / "barcodes_fwd.fasta"
+    reverse_fasta = output_dir / "barcodes_rev.fasta"
 
-        forward_fasta = output_dir / "barcodes_fwd.fasta"
-        reverse_fasta = output_dir / "barcodes_rev.fasta"
-
-        with forward_fasta.open("w") as fwd_file, reverse_fasta.open("w") as rev_file:
-            for (
-                sample_name,
-                forward_barcode,
-                reverse_barcode,
-                forward_barcode_name,
-                reverse_barcode_name,
-            ) in barcodes:
-                fwd_file.write(f">{forward_barcode_name}\n{forward_barcode}\n")
-                rev_file.write(f">{reverse_barcode_name}\n{reverse_barcode}\n")
+    with forward_fasta.open("w") as fwd_file, reverse_fasta.open("w") as rev_file:
+        for (
+            sample_name,
+            forward_barcode,
+            reverse_barcode,
+            forward_barcode_name,
+            reverse_barcode_name,
+            forward_primer,
+            reverse_primer,
+        ) in barcodes:
+            if include_primers:
+                forward_barcode += forward_primer
+                reverse_barcode += reverse_primer
+            fwd_file.write(f">{forward_barcode_name}\n{forward_barcode}\n")
+            rev_file.write(f">{reverse_barcode_name}\n{reverse_barcode}\n")
 
     return forward_fasta, reverse_fasta
-
-
-def parse_samplesheet(csv_reader, include_primers):
-    """
-    Parse the samplesheet and return a list of barcodes.
-    """
-    barcodes = []
-
-    for row in csv_reader:
-        sample_name = row[0]
-        forward_barcode = (
-            row[1].replace(" ", "") if include_primers else row[1].split(" ")[0]
-        )
-        reverse_barcode = (
-            row[2].replace(" ", "") if include_primers else row[2].split(" ")[0]
-        )
-        forward_barcode_name = row[3]
-        reverse_barcode_name = row[4]
-        barcodes.append(
-            (
-                sample_name,
-                forward_barcode,
-                reverse_barcode,
-                forward_barcode_name,
-                reverse_barcode_name,
-            )
-        )
-
-    return barcodes
 
 
 def main():
