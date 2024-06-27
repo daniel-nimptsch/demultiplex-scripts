@@ -36,7 +36,7 @@ def main():
     output = []
     output.append("sampleID,forwardReads,reverseReads")
     sample_dict = parse_directory(args.directory)
-    output = generate_output(sample_dict)
+    output = generate_output(sample_dict, args)
 
     if args.output:
         with open(args.output, "w") as f:
@@ -59,22 +59,17 @@ def parse_directory(directory):
     return sample_dict
 
 
-def generate_output(sample_dict):
+def generate_output(sample_dict, args):
     output = ["sampleID,forwardReads,reverseReads"]
     for sample_name, paths in sample_dict.items():
         if paths["R1"] and paths["R2"]:
             output.append(f"{sample_name},{paths['R1']},{paths['R2']}")
-    return output
-
-    for sample_name, paths in sample_dict.items():
-        if paths["R1"] and paths["R2"]:
-            output.append(f"{sample_name},{paths['R1']},{paths['R2']}")
-
     if args.output:
         with open(args.output, "w") as f:
             f.write("\n".join(output) + "\n")
     else:
         print("\n".join(output))
+    return output
 
 
 if __name__ == "__main__":
