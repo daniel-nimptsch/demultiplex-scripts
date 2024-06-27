@@ -14,15 +14,13 @@ python src/demultiplex.py \
 cat data/demultiplex/patterns.txt | python src/patterns_copy.py -o data/demultiplex/demux_renamed
 
 mkdir data/demultiplex/work
-cp data/demultiplex/*.fastq.gz data/demultiplex/work/
+mv data/demultiplex/*.fastq.gz data/demultiplex/work/
 
-bash src/dir_to_reads_tsv.sh data/demultiplex/work/ | \
+bash src/dir_to_reads_tsv.sh data/demultiplex/work | \
     python src/reads_stats.py > data/demultiplex/cutadapt_reads.tsv
 
 bash src/dir_to_reads_tsv.sh data/demultiplex/demux_renamed | \
     python src/reads_stats.py > data/demultiplex/sample_reads.tsv
 
-python src/ampliseq_samplesheet_gen.py data/demultiplex/renamed > \
-    data/demultiplex/renamed/sample_sheet.csv
-
-python src/ampliseq_samplesheet_gen.py data/demultiplex/renamed > samplesheet.csv
+python src/ampliseq_samplesheet_gen.py data/demultiplex/demux_renamed > \
+    data/demultiplex/demux_renamed/sample_sheet.csv
