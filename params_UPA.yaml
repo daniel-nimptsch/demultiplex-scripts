@@ -1,0 +1,10 @@
+input: "./data/demultiplex/demux_renamed/sample_sheet.csv"
+FW_primer: "GGACAGAAAGACCCTATGA"
+RV_primer: "TCAGCCTGTTATCCCTAGAG"
+trunclenf: 240
+trunclenr: 200
+skip_taxonomy: true
+skip_multiqc: true
+outdir: "./UPA/results"
+ignore_failed_filtering: true
+metadata: "./data/demultiplex/demux_renamed/metadata.tsv"
