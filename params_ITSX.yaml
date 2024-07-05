@@ -1,12 +1,14 @@
 input: "./data/demultiplex/demux_renamed/sample_sheet.csv"
-FW_primer: "GGACAGAAAGACCCTATGA"
-RV_primer: "TCAGCCTGTTATCCCTAGAG"
+FW_primer: "CGATGAAGAACGCAGCG"
+RV_primer: "TCCTCCGCTTAGTTATATGC"
 trunclenf: 210
 trunclenr: 200
-skip_taxonomy: true
+# skip_taxonomy: true
 # skip_multiqc: true
-outdir: "./UPA/results"
+outdir: "./ITSX/results"
 ignore_failed_filtering: true
 metadata: "./data/demultiplex/demux_renamed/metadata.tsv"
 illumina_novaseq: true
+illumina_pe_its: true
 cutadapt_max_error_rate: 2
+qiime_ref_taxonomy: "unite-alleuk"
