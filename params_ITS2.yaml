@@ -1,14 +1,18 @@
 input: "./data/demultiplex/demux_renamed/sample_sheet.csv"
 FW_primer: "GATGAAGAACGYAGYRAA"
 RV_primer: "TCCTCCGCTTATTGATATGC"
-trunclenf: 210
-trunclenr: 200
-# skip_taxonomy: true
-# skip_multiqc: true
+# trunclenf: 210
+# trunclenr: 210
 outdir: "./ITS2/results"
 ignore_failed_filtering: true
-metadata: "./data/demultiplex/demux_renamed/metadata.tsv"
+sample_inference: "pooled"
 illumina_novaseq: true
 illumina_pe_its: true
-cutadapt_max_error_rate: 2
+addsh: true
 qiime_ref_taxonomy: "unite-alleuk"
+dada_ref_taxonomy: "unite-alleuk"
+metadata: "./data/demultiplex/demux_renamed/metadata.tsv"
+metadata_category: "category"
+metadata_category_barplot: "category"
+metadata_category: "category"
+qiime_adonis_formula: "category"
