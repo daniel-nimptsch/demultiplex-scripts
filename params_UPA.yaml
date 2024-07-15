@@ -1,12 +1,15 @@
-input: "./data/demultiplex/demux_renamed/sample_sheet.csv"
 FW_primer: "GGACAGAAAGACCCTATGA"
 RV_primer: "TCAGCCTGTTATCCCTAGAG"
-trunclenf: 210
-trunclenr: 200
-skip_taxonomy: true
-# skip_multiqc: true
-outdir: "./UPA/results"
+dada_ref_tax_custom: "./data/microgreen_db/dada/microgreen_id_dada2.fna"
+dada_ref_tax_custom_sp: "./data/microgreen_db/dada/microgreen_id_dada2_species.fna"
 ignore_failed_filtering: true
-metadata: "./data/demultiplex/demux_renamed/metadata.tsv"
 illumina_novaseq: true
-cutadapt_max_error_rate: 2
+input: "./data/demultiplex/demux_renamed/sample_sheet.csv"
+metadata: "./data/demultiplex/demux_renamed/metadata.tsv"
+metadata_category: "category"
+metadata_category: "category"
+metadata_category_barplot: "category"
+outdir: "./UPA/results"
+qiime_adonis_formula: "category"
+qiime_ref_tax_custom: "./data/microgreen_db/qiime/"
+sample_inference: "pooled"
