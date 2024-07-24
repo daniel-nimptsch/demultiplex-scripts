@@ -1,9 +1,9 @@
 .aider*
 .git.tar.gz
 .nextflow*
-ITS2
-ITSX
-UPA
+ITS2/results
+ITSX/results
+UPA/results
 data
 docs
 pipeline_scripts_dn
