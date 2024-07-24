@@ -1,11 +1,11 @@
 #!/usr/bin/bash
 
-python src/parse_samplesheet_novogene.py docs/sample_sheet_agr.tsv | \
+python src/parse_samplesheet_novogene.py docs/samplesheet_UPA_RedAlgae_KBR_multiplex_RedA01_240611.csv | \
     python src/barcodes_to_fasta.py -o data/demultiplex
 
 python src/demultiplex.py \
-    data/multiplex/AgroSoil_1_FKDN240147590-1A_H7HKJDRX5_L2_1.fq.gz \
-    data/multiplex/AgroSoil_1_FKDN240147590-1A_H7HKJDRX5_L2_2.fq.gz \
+    data/RedAlgae_KBR_multiplex/REDA01/REDA01_FKDN240225426-1A_H7M3YDRX5_L1_1.fq.gz \
+    data/RedAlgae_KBR_multiplex/REDA01/REDA01_FKDN240225426-1A_H7M3YDRX5_L1_2.fq.gz \
     data/demultiplex/barcodes_fwd.fasta \
     data/demultiplex/barcodes_rev.fasta \
     -o data/demultiplex \
