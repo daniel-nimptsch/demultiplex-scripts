@@ -15,3 +15,5 @@ qiime_adonis_formula: "category"
 sample_inference: "pooled"
 skip_multiqc: true
 skip_taxonomy: true
+trunclenf: 220
+trunclenr: 220

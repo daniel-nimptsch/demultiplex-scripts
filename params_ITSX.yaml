@@ -1,6 +1,6 @@
-# addsh: true
-# dada_ref_taxonomy: "unite-alleuk"
-# qiime_ref_taxonomy: "unite-alleuk"
+addsh: true
+dada_ref_taxonomy: "unite-alleuk"
+qiime_ref_taxonomy: "unite-alleuk"
 FW_primer: "CGATGAAGAACGCAGCG"
 RV_primer: "TCCTCCGCTTAGTTATATGC"
 ignore_failed_filtering: true
@@ -16,3 +16,5 @@ qiime_adonis_formula: "category"
 sample_inference: "pooled"
 skip_multiqc: true
 skip_taxonomy: true
+trunclenf: 220
+trunclenr: 220
