@@ -1,6 +1,6 @@
-addsh: true
-dada_ref_taxonomy: "unite-alleuk"
-qiime_ref_taxonomy: "unite-alleuk"
+# addsh: true
+# dada_ref_taxonomy: "unite-alleuk"
+# qiime_ref_taxonomy: "unite-alleuk"
 FW_primer: "GATGAAGAACGYAGYRAA"
 RV_primer: "TCCTCCGCTTATTGATATGC"
 ignore_failed_filtering: true
