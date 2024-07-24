@@ -43,6 +43,9 @@ def create_fasta(barcodes, output_dir, include_primers):
     forward_fasta = output_dir / "barcodes_fwd.fasta"
     reverse_fasta = output_dir / "barcodes_rev.fasta"
 
+    seen_forward_barcodes = set()
+    seen_reverse_barcodes = set()
+
     with forward_fasta.open("w") as fwd_file, reverse_fasta.open("w") as rev_file:
         for (
             sample_name,
@@ -53,12 +56,27 @@ def create_fasta(barcodes, output_dir, include_primers):
             forward_primer,
             reverse_primer,
         ) in barcodes:
-            if include_primers:
-                forward_barcode += forward_primer
-                reverse_barcode += reverse_primer
-            fwd_file.write(f">{forward_barcode_name}\n{forward_barcode}\n")
-            rev_file.write(f">{reverse_barcode_name}\n{reverse_barcode}\n")
+            if forward_barcode in seen_forward_barcodes:
+                print(
+                    f"Warning: Duplicate forward barcode {forward_barcode}. Skipping.",
+                    file=sys.stderr,
+                )
+            else:
+                seen_forward_barcodes.add(forward_barcode)
+                if include_primers:
+                    forward_barcode += forward_primer
+                fwd_file.write(f">{forward_barcode_name}\n{forward_barcode}\n")
 
+            if reverse_barcode in seen_reverse_barcodes:
+                print(
+                    f"Warning: Duplicate reverse barcode {reverse_barcode}. Skipping.",
+                    file=sys.stderr,
+                )
+            else:
+                seen_reverse_barcodes.add(reverse_barcode)
+                if include_primers:
+                    reverse_barcode += reverse_primer
+                rev_file.write(f">{reverse_barcode_name}\n{reverse_barcode}\n")
     return forward_fasta, reverse_fasta
 
 
