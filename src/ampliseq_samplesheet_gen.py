@@ -2,6 +2,28 @@ import os
 import argparse
 
 
+def parse_directory(directory):
+    sample_dict = {}
+    for filename in os.listdir(directory):
+        if filename.endswith(".fastq.gz"):
+            sample_name = "_".join(filename.split("_")[:-1])
+            if sample_name not in sample_dict:
+                sample_dict[sample_name] = {"R1": None, "R2": None}
+            if "_R1" in filename:
+                sample_dict[sample_name]["R1"] = os.path.join(directory, filename)
+            elif "_R2" in filename:
+                sample_dict[sample_name]["R2"] = os.path.join(directory, filename)
+    return sample_dict
+
+
+def generate_output(sample_dict, args):
+    output = ["sampleID,forwardReads,reverseReads"]
+    for sample_name, paths in sample_dict.items():
+        if paths["R1"] and paths["R2"]:
+            output.append(f"{sample_name},{paths['R1']},{paths['R2']}")
+    return output
+
+
 def main():
     parser = argparse.ArgumentParser(
         description="""
@@ -32,8 +54,6 @@ def main():
         print(f"Directory {args.directory} does not exist.")
         exit(1)
 
-    output = []
-    output.append("sampleID,forwardReads,reverseReads")
     sample_dict = parse_directory(args.directory)
     output = generate_output(sample_dict, args)
 
@@ -42,33 +62,6 @@ def main():
             f.write("\n".join(output) + "\n")
     else:
         print("\n".join(output))
-
-
-def parse_directory(directory):
-    sample_dict = {}
-    for filename in os.listdir(directory):
-        if filename.endswith(".fastq.gz"):
-            sample_name = "_".join(filename.split("_")[:-1])
-            if sample_name not in sample_dict:
-                sample_dict[sample_name] = {"R1": None, "R2": None}
-            if "_R1" in filename:
-                sample_dict[sample_name]["R1"] = os.path.join(directory, filename)
-            elif "_R2" in filename:
-                sample_dict[sample_name]["R2"] = os.path.join(directory, filename)
-    return sample_dict
-
-
-def generate_output(sample_dict, args):
-    output = ["sampleID,forwardReads,reverseReads"]
-    for sample_name, paths in sample_dict.items():
-        if paths["R1"] and paths["R2"]:
-            output.append(f"{sample_name},{paths['R1']},{paths['R2']}")
-    if args.output:
-        with open(args.output, "w") as f:
-            f.write("\n".join(output) + "\n")
-    else:
-        print("\n".join(output))
-    return output
 
 
 if __name__ == "__main__":
