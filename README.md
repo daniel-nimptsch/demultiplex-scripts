@@ -1,15 +1,15 @@
+# Demultiplex scripts
 
-        # Demultiplex scripts
+This repository contains scripts to demultiplex sequencing data using
+cutadapt and to generate a sample sheet for nf-core/ampliseq.
 
-        This repository contains scripts to demultiplex sequencing data using
-        cutadapt and to generate a sample sheet for nf-core/ampliseq.
+## Usage
 
-        ## Usage
+Take a look at the example pipeline in `src/example_pipeline.sh`. This
+shows you how the scripts can be used in conjunction.
 
-        Take a look at the example pipeline in `src/example_pipeline.sh`. This
-        shows you how the scripts can be used in conjunction.
 
-        ### src/parse_samplesheet_novogene.py
+### src/parse_samplesheet_novogene.py
 
 ```
 usage: parse_samplesheet_novogene.py [-h] samplesheet_path
@@ -117,5 +117,7 @@ options:
 ### src/dir_to_reads_tsv.sh
 
 ```
+Usage: bash src/dir_to_reads_tsv.sh <input_directory>
+Example: bash src/dir_to_reads_tsv.sh data/demultiplex/work
 ```
 

@@ -22,21 +22,19 @@ def main():
         "src/demultiplex.py",
         "src/ampliseq_samplesheet_gen.py",
         "src/patterns_copy.py",
-        "src/dir_to_reads_tsv.sh"
+        "src/dir_to_reads_tsv.sh",
     ]
 
-    readme_content = """
-        # Demultiplex scripts
+    readme_content = """# Demultiplex scripts
 
-        This repository contains scripts to demultiplex sequencing data using
-        cutadapt and to generate a sample sheet for nf-core/ampliseq.
+This repository contains scripts to demultiplex sequencing data using
+cutadapt and to generate a sample sheet for nf-core/ampliseq.
 
-        ## Usage
+## Usage
 
-        Take a look at the example pipeline in `src/example_pipeline.sh`. This
-        shows you how the scripts can be used in conjunction.
-
-        """
+Take a look at the example pipeline in `src/example_pipeline.sh`. This
+shows you how the scripts can be used in conjunction.\n\n
+"""
 
     for script in scripts:
         help_output = get_help_output(script)
