@@ -5,6 +5,13 @@
 # Usage: bash src/dir_to_reads_tsv.sh <input_directory>
 # Example: bash src/dir_to_reads_tsv.sh data/demultiplex/work
 
+# Check for help flag
+if [[ "$1" == "--help" || "$1" == "-h" ]]; then
+    echo "Usage: bash src/dir_to_reads_tsv.sh <input_directory>"
+    echo "Example: bash src/dir_to_reads_tsv.sh data/demultiplex/work"
+    exit 0
+fi
+
 input_dir=$1
 
 # Check if the directory exists
