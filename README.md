@@ -1,96 +1,121 @@
-# Ampliseq Pipeline
 
-This repository contains scripts to process sequencing data using cutadapt and generate sample sheets for ampliseq.
+        # Demultiplex scripts
 
-## Usage
+        This repository contains scripts to demultiplex sequencing data using
+        cutadapt and to generate a sample sheet for nf-core/ampliseq.
 
-### Step 1: Parse Novogene Samplesheet
+        ## Usage
 
-Parse a samplesheet and print barcodes in TSV format. This is a specific parsing script for novogene multiplex sample sheet.
+        Take a look at the example pipeline in `src/example_pipeline.sh`. This
+        shows you how the scripts can be used in conjunction.
 
-```bash
-python src/parse_samplesheet_novogene.py PATH_TO_NOVOGENE_SAMPLESHEET
+        ### src/parse_samplesheet_novogene.py
+
+```
+usage: parse_samplesheet_novogene.py [-h] samplesheet_path
+
+Parse a samplesheet and print barcodes in TSV format. This is a specific
+parsing script for novogene multiplex sample sheet.
+
+positional arguments:
+  samplesheet_path  Path to the samplesheet file
+
+options:
+  -h, --help        show this help message and exit
 ```
 
-### Step 2: Generate FASTA Files from Samplesheet
+### src/barcodes_to_fasta.py
 
-Generate FASTA files from a samplesheet (TSV) containing sample names and barcodes. The samplesheet should be tab-delimited with the following format: sample name, forward barcode, reverse barcode, forward barcode name, reverse barcode name, forward primer, and reverse primer.
+```
+usage: barcodes_to_fasta.py [-h] [--include-primers] [-o OUTPUT] [samplesheet]
 
-Additionally, a patterns file is generated for use after cutadapt's demultiplex of paired-end reads with combinatorial dual indexes. The patterns file can be used as input with `patterns_copy.py`.
+Generate FASTA files from a samplesheet (TSV) containing sample names and
+barcodes. The samplesheet should be tab-delimited with the following format:
+sample name, forward barcode, reverse barcode, forward barcode name, reverse
+barcode name,forward primer and reverse primer. Additionally a patterns file
+is generated for the use after cutadapts demultiplex of paired-end reads with
+combinatorial dual indexes. The patterns file can be used as input with
+patterns_copy.py.
 
-```bash
-python src/barcodes_to_fasta.py -o data/demultiplex
+positional arguments:
+  samplesheet           Path to the samplesheet TSV (default: stdin)
+
+options:
+  -h, --help            show this help message and exit
+  --include-primers     Include primers in the barcodes saved to the FASTA
+                        files (default: False)
+  -o OUTPUT, --output OUTPUT
+                        Directory to save the output FASTA files (default: ./)
 ```
 
-### Step 3: Demultiplex with Cutadapt
+### src/demultiplex.py
 
-Demultiplex with cutadapt paired-end FASTQ files using forward and reverse FASTA files containing barcodes. You have the option between the default mode where paired adapters with unique dual indices are assumed and the mode combinatorial dual indexes for demultiplexing.
+```
+usage: demultiplex.py [-h] [-o OUTPUT] [-c]
+                      fq_gz_1 fq_gz_2 forward_fasta reverse_fasta
 
-```bash
-python src/demultiplex.py PATH_TO_FWD_FASTQ PATH_TO_REV_FASTQ data/demultiplex/barcodes_fwd.fasta data/demultiplex/barcodes_rev.fasta -o data/demultiplex -c
+Demultiplex with cutadapt paired end FASTQ files using forward and reverse
+FASTA files containing barcodes. You have the option between the default mode
+where paired adapters with unique dual indices are assumed and the mode
+combinatorial dual indexes for demultiplexing.
+
+positional arguments:
+  fq_gz_1               Path to the first FASTQ file (R1)
+  fq_gz_2               Path to the second FASTQ file (R2)
+  forward_fasta         Path to the forward FASTA file containing barcodes
+  reverse_fasta         Path to the reverse FASTA file containing barcodes
+
+options:
+  -h, --help            show this help message and exit
+  -o OUTPUT, --output OUTPUT
+                        Directory to save the output demultiplexed FASTQ files
+                        (default: ./)
+  -c, --combinatorial   Use combinatorial dual indexes for demultiplexing
+                        paired-end reads (default: False). In the default case
+                        demultiplexing unique dual indices is executed.
 ```
 
-### Step 4: Rename Files Based on Patterns
+### src/ampliseq_samplesheet_gen.py
 
-Rename files based on patterns provided either as an argument or from stdin. The patterns should be a pair of words separated by space with each line of the file being one pair. The first name should match a filepath and the second is the filepath that the file will be copied to.
+```
+usage: ampliseq_samplesheet_gen.py [-h] [-o OUTPUT] directory
 
-```bash
-cat data/demultiplex/patterns.txt | python src/patterns_copy.py -o data/demultiplex/demux_renamed
+Generate an ampliseq compatible sample sheet from filenames originating from
+demultiplex cutadapt script in a directory.
+
+positional arguments:
+  directory             The directory containing the files. Files are expected
+                        to have this format: {sample_name}_R{1,2}.fastq.gz
+
+options:
+  -h, --help            show this help message and exit
+  -o OUTPUT, --output OUTPUT
+                        The output file to write the sample sheet to. If not
+                        provided, output will be printed to the console.
 ```
 
-### Step 5: Move Files to Work Directory
+### src/patterns_copy.py
 
-Move the demultiplexed FASTQ files to a work directory.
+```
+usage: patterns_copy.py [-h] [-o OUTPUT] [patterns]
 
-```bash
-mkdir data/demultiplex/work
-mv data/demultiplex/*.fastq.gz data/demultiplex/work/
+Rename files based on patterns provided either as an argument or from stdin.
+The patterns should be a piar of words separated by space with each line of
+the file being one pair. The first name should match a filepath and the second
+is the filepath that the file will be copied to.
+
+positional arguments:
+  patterns              Path to the patterns file (default: stdin)
+
+options:
+  -h, --help            show this help message and exit
+  -o OUTPUT, --output OUTPUT
+                        The output dir to copy the renamed. If not provided,
+                        output will be ./.
 ```
 
-### Step 6: Generate Read Counts
+### src/dir_to_reads_tsv.sh
 
-Generate read counts for the demultiplexed FASTQ files.
-
-```bash
-bash src/dir_to_reads_tsv.sh data/demultiplex/work > data/demultiplex/cutadapt_reads.tsv
-bash src/dir_to_reads_tsv.sh data/demultiplex/demux_renamed > data/demultiplex/sample_reads.tsv
+```
 ```
 
-### Step 7: Generate Ampliseq Sample Sheet
-
-Generate an ampliseq compatible sample sheet from filenames originating from demultiplex cutadapt script in a directory.
-
-```bash
-python src/ampliseq_samplesheet_gen.py data/demultiplex/demux_renamed > data/demultiplex/demux_renamed/sample_sheet.csv
-```
-
-## Example Pipeline
-
-The following script demonstrates the entire pipeline:
-
-```bash
-#!/bin/bash
-
-python src/parse_samplesheet_novogene.py PATH_TO_NOVOGENE_SAMPLESHEET | \
-    python src/barcodes_to_fasta.py -o data/demultiplex
-
-python src/demultiplex.py \
-    PATH_TO_FWD_FASTQ \
-    PATH_TO_REV_FASTQ \
-    data/demultiplex/barcodes_fwd.fasta \
-    data/demultiplex/barcodes_rev.fasta \
-    -o data/demultiplex \
-    -c
-
-cat data/demultiplex/patterns.txt | \
-    python src/patterns_copy.py -o data/demultiplex/demux_renamed
-
-mkdir data/demultiplex/work
-mv data/demultiplex/*.fastq.gz data/demultiplex/work/
-
-bash src/dir_to_reads_tsv.sh data/demultiplex/work > data/demultiplex/cutadapt_reads.tsv
-bash src/dir_to_reads_tsv.sh data/demultiplex/demux_renamed > data/demultiplex/sample_reads.tsv
-
-python src/ampliseq_samplesheet_gen.py data/demultiplex/demux_renamed > \
-    data/demultiplex/demux_renamed/sample_sheet.csv
-```
