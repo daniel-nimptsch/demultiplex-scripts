@@ -1,4 +1,10 @@
 #!/bin/bash
+#!/bin/bash
+
+# This script generates a TSV file with read counts for each FASTQ file in the specified directory.
+# Usage: bash src/dir_to_reads_tsv.sh <input_directory>
+# Example: bash src/dir_to_reads_tsv.sh data/demultiplex/work
+
 input_dir=$1
 
 # Check if the directory exists
