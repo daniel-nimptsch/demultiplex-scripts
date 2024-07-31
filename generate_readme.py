@@ -20,9 +20,9 @@ def main():
         "src/parse_samplesheet_novogene.py",
         "src/barcodes_to_fasta.py",
         "src/demultiplex.py",
-        "src/ampliseq_samplesheet_gen.py",
         "src/patterns_copy.py",
         "src/dir_to_reads_tsv.sh",
+        "src/ampliseq_samplesheet_gen.py",
     ]
 
     readme_content = """# Demultiplex scripts

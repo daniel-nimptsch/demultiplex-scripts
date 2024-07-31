@@ -75,25 +75,6 @@ options:
                         demultiplexing unique dual indices is executed.
 ```
 
-### src/ampliseq_samplesheet_gen.py
-
-```
-usage: ampliseq_samplesheet_gen.py [-h] [-o OUTPUT] directory
-
-Generate an ampliseq compatible sample sheet from filenames originating from
-demultiplex cutadapt script in a directory.
-
-positional arguments:
-  directory             The directory containing the files. Files are expected
-                        to have this format: {sample_name}_R{1,2}.fastq.gz
-
-options:
-  -h, --help            show this help message and exit
-  -o OUTPUT, --output OUTPUT
-                        The output file to write the sample sheet to. If not
-                        provided, output will be printed to the console.
-```
-
 ### src/patterns_copy.py
 
 ```
@@ -119,5 +100,24 @@ options:
 ```
 Usage: bash src/dir_to_reads_tsv.sh <input_directory>
 Example: bash src/dir_to_reads_tsv.sh data/demultiplex/work
+```
+
+### src/ampliseq_samplesheet_gen.py
+
+```
+usage: ampliseq_samplesheet_gen.py [-h] [-o OUTPUT] directory
+
+Generate an ampliseq compatible sample sheet from filenames originating from
+demultiplex cutadapt script in a directory.
+
+positional arguments:
+  directory             The directory containing the files. Files are expected
+                        to have this format: {sample_name}_R{1,2}.fastq.gz
+
+options:
+  -h, --help            show this help message and exit
+  -o OUTPUT, --output OUTPUT
+                        The output file to write the sample sheet to. If not
+                        provided, output will be printed to the console.
 ```
 
