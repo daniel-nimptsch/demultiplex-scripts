@@ -2,9 +2,16 @@ import subprocess
 
 
 def get_help_output(script_path):
-    result = subprocess.run(
-        ["python", script_path, "--help"], capture_output=True, text=True
-    )
+    if script_path.endswith(".py"):
+        result = subprocess.run(
+            ["python", script_path, "--help"], capture_output=True, text=True
+        )
+    elif script_path.endswith(".sh"):
+        result = subprocess.run(
+            ["bash", script_path, "--help"], capture_output=True, text=True
+        )
+    else:
+        raise ValueError(f"Unsupported script type: {script_path}")
     return result.stdout
 
 
@@ -15,7 +22,7 @@ def main():
         "src/demultiplex.py",
         "src/ampliseq_samplesheet_gen.py",
         "src/patterns_copy.py",
-        "src/dir_to_reads_tsv.sh",
+        "src/dir_to_reads_tsv.sh"
     ]
 
     readme_content = """
