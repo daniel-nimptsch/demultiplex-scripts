@@ -110,6 +110,11 @@ def main():
             the following format: sample name, forward barcode, reverse
             barcode, forward barcode name, reverse barcode name,forward primer
             and reverse primer.
+
+            Additionally a patterns file is generated for the use after
+            cutadapts demultiplex of paired-end reads with combinatorial dual
+            indexes. The patterns file can be used as input with
+            patterns_copy.py.
             """
         )
     )

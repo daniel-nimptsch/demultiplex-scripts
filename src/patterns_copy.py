@@ -20,7 +20,13 @@ def rename_files(patterns, output_path):
 
 def main():
     parser = argparse.ArgumentParser(
-        description="Rename files based on patterns provided either as an argument or from stdin."
+        description="""
+        Rename files based on patterns provided either as an argument or from
+        stdin. The patterns should be a piar of words separated by space with
+        each line of the file being one pair. The first name should match a
+        filepath and the second is the filepath that the file will be copied
+        to.
+        """
     )
     parser.add_argument(
         "patterns",

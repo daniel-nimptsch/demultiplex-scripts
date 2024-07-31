@@ -38,7 +38,10 @@ def parse_samplesheet(samplesheet_path):
 
 def main():
     parser = argparse.ArgumentParser(
-        description="Parse a samplesheet and print barcodes in TSV format."
+        description="""
+        Parse a samplesheet and print barcodes in TSV format. This is a
+        specific parsing script for novogene multiplex sample sheet.
+        """
     )
     parser.add_argument(
         "samplesheet_path", type=str, help="Path to the samplesheet file"

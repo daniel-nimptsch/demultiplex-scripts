@@ -51,8 +51,13 @@ def main():
     # Set up argument parser
     parser = argparse.ArgumentParser(
         description=(
-            "Demultiplex FASTQ files using forward and reverse FASTA files containing barcodes, "
-            "followed by demultiplexing with cutadapt."
+            """
+            Demultiplex with cutadapt paired end FASTQ files using forward and
+            reverse FASTA files containing barcodes. You have the option
+            between the default mode where paired adapters with unique dual
+            indices are assumed and the mode combinatorial dual indexes for
+            demultiplexing.
+            """
         )
     )
     parser.add_argument("fq_gz_1", type=str, help="Path to the first FASTQ file (R1)")
@@ -80,7 +85,11 @@ def main():
         "-c",
         "--combinatorial",
         action="store_true",
-        help="Use combinatorial dual indexes for demultiplexing paired-end reads (default: False). In the default case demultiplexing unique dual indices is executed.",
+        help="""
+        Use combinatorial dual indexes for demultiplexing paired-end reads
+        (default: False). In the default case demultiplexing unique dual
+        indices is executed.
+        """,
         default=False,
     )
 

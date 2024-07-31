@@ -27,8 +27,8 @@ def generate_output(sample_dict, args):
 def main():
     parser = argparse.ArgumentParser(
         description="""
-            Generate a sample sheet from filenames originating from demultiplex
-            cutadapt script in a directory.
+            Generate an ampliseq compatible sample sheet from filenames
+            originating from demultiplex cutadapt script in a directory.
             """
     )
     parser.add_argument(
