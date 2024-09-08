@@ -88,6 +88,28 @@ def count_reads(input_path: str, file_endings: set[str]) -> pd.DataFrame:
         raise RuntimeError(f"Error running seqkit stats: {e}")
 
 
+def count_motifs(df: pd.DataFrame) -> pd.DataFrame:
+    """
+    Count motifs in the input files.
+
+    Args:
+        df (pd.DataFrame): DataFrame containing file paths and read counts
+
+    Returns:
+        pd.DataFrame: DataFrame with added columns for motif counts
+    """
+    # Placeholder for motif counting logic
+    # This is where you would implement the actual motif counting
+    # For now, we'll just add dummy columns
+
+    df['forward_barcode_count'] = 0
+    df['reverse_barcode_count'] = 0
+    df['forward_primer_count'] = 0
+    df['reverse_primer_count'] = 0
+
+    return df
+
+
 def main():
     parser = argparse.ArgumentParser(
         description="Count reads in FASTA/FASTQ files and subset reads with specific adapter or primer sequences using seqkit."
@@ -119,11 +141,12 @@ def main():
     try:
         file_endings = parse_input_path(args.input_path)
         read_counts = count_reads(args.input_path, file_endings)
+        motif_counts = count_motifs(read_counts)
 
         if args.output:
-            read_counts.to_csv(args.output, sep="\t", index=False)
+            motif_counts.to_csv(args.output, sep="\t", index=False)
         else:
-            print(read_counts.to_string(index=False))
+            print(motif_counts.to_string(index=False))
     except (ValueError, RuntimeError) as e:
         print(f"Error: {str(e)}")
 
