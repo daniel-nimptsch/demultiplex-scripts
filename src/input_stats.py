@@ -89,7 +89,7 @@ def count_reads(file_paths: list[str]) -> pd.DataFrame:
         raise RuntimeError(f"Error running seqkit stats: {e}")
 
 
-def count_motifs(file_paths: list[str]):
+def count_motifs(file_paths: list[str]) -> pd.DataFrame:
     """
     Count motifs in the input files using seqkit grep.
 
@@ -99,26 +99,25 @@ def count_motifs(file_paths: list[str]):
     Returns:
         pd.DataFrame: DataFrame with columns for file paths and motif counts
     """
-
     df = pd.DataFrame({"file": file_paths})
-
-    counts = []
+    
     for fasta in file_paths:
-        command = f"seqkit locate {fasta} -M -m 1 -f {BARCODE_PATH}"
-        try:
-            run_command(command)
-        command = f"seqkit locate {fasta} -dM -f {PRIMER_PATH}"
-        try:
-            run_command(command)
-
+        barcode_command = f"seqkit locate {fasta} -M -m 1 -f {BARCODE_PATH} | wc -l"
+        primer_command = f"seqkit locate {fasta} -dM -f {PRIMER_PATH} | wc -l"
+        
+        barcode_count = int(run_command(barcode_command)[0]) - 1  # Subtract 1 to exclude header
+        primer_count = int(run_command(primer_command)[0]) - 1  # Subtract 1 to exclude header
+        
+        df.loc[df['file'] == fasta, 'barcode_count'] = barcode_count
+        df.loc[df['file'] == fasta, 'primer_count'] = primer_count
+    
+    return df
 
 def run_command(command: str) -> list[str]:
     result = subprocess.run(
         command, shell=True, check=True, capture_output=True, text=True
     )
-    output_lines = result.stdout.strip().split("\n")
-    print(command)
-    print(output_lines)
+    return result.stdout.strip().split("\n")
 
 
 def main():
@@ -147,8 +146,9 @@ def main():
     try:
         file_paths = parse_input_path(args.input_path)
         read_counts = count_reads(file_paths)
-        count_motifs(file_paths)
-
+        motif_counts = count_motifs(file_paths)
+        
+        result = pd.merge(read_counts, motif_counts, on="file")
 
         if args.output:
             result.to_csv(args.output, sep="\t", index=False)
