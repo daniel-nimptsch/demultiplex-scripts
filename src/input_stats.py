@@ -129,6 +129,7 @@ def count_motifs(file_paths: list[str]) -> pd.DataFrame:
         pd.DataFrame: DataFrame with columns for file paths and motif counts
     """
     motifs = get_motifs()
+    print(motifs)
 
     df = pd.DataFrame({"file": file_paths})
 
@@ -136,13 +137,11 @@ def count_motifs(file_paths: list[str]) -> pd.DataFrame:
         counts = []
         for fasta in file_paths:
             command = f"seqkit grep {fasta} -i -s -p {motif_seq} -C -j $(nproc)"
-            print(command)
             try:
                 result = subprocess.run(
                     command, shell=True, check=True, capture_output=True, text=True
                 )
                 output_lines = result.stdout.strip().split("\n")
-                print(output_lines)
                 if int(output_lines[0]):
                     count = int(output_lines[0])
                 else:
@@ -154,12 +153,12 @@ def count_motifs(file_paths: list[str]) -> pd.DataFrame:
                 print(
                     f"Error running seqkit grep for motif {motif_name} in file {fasta}: {e}"
                 )
-                count = 0
+                count = pd.NA
             except ValueError as e:
                 print(
                     f"Error parsing seqkit grep output for motif {motif_name} in file {fasta}: {e}"
                 )
-                count = 0
+                count = pd.NA
             counts.append(count)
         df[motif_name] = counts
 

@@ -34,7 +34,7 @@ def parse_samplesheet(samplesheet_file):
     return barcodes
 
 
-def create_fasta(barcodes, output_dir, include_primers, primer_name='primer'):
+def create_fasta(barcodes, output_dir, include_primers, primer_name="primer"):
     """
     Create FASTA files from the samplesheet.
     """
@@ -81,15 +81,11 @@ def create_fasta(barcodes, output_dir, include_primers, primer_name='primer'):
             if not include_primers:
                 if forward_primer not in seen_forward_primers:
                     seen_forward_primers.add(forward_primer)
-                    fwd_primer_file.write(
-                        f">forward_{primer_name}_{forward_barcode_name}\n{forward_primer}\n"
-                    )
+                    fwd_primer_file.write(f">forward_{primer_name}\n{forward_primer}\n")
 
                 if reverse_primer not in seen_reverse_primers:
                     seen_reverse_primers.add(reverse_primer)
-                    rev_primer_file.write(
-                        f">reverse_{primer_name}_{reverse_barcode_name}\n{reverse_primer}\n"
-                    )
+                    rev_primer_file.write(f">reverse_{primer_name}\n{reverse_primer}\n")
 
     return forward_fasta, reverse_fasta, forward_primer_fasta, reverse_primer_fasta
 
