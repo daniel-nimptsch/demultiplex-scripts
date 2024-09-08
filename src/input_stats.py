@@ -104,9 +104,11 @@ def count_reads(file_paths: List[str], verbose: bool = False) -> pd.DataFrame:
         raise RuntimeError(f"Error running seqkit stats: {e}")
 
 
-def count_motifs(file_paths: List[str], avg_lengths: dict[str, float], verbose: bool = False) -> pd.DataFrame:
+def count_motifs(
+    file_paths: List[str], avg_lengths: dict[str, float], verbose: bool = False
+) -> pd.DataFrame:
     """
-    Count motifs in the input files using seqkit grep.
+    Count motifs in the input files using seqkit locate.
 
     Args:
         file_paths (List[str]): List of file paths to process
@@ -130,7 +132,7 @@ def count_motifs(file_paths: List[str], avg_lengths: dict[str, float], verbose: 
 
     for fasta in file_paths:
         barcode_command = (
-            f"seqkit locate {fasta} -FPi -m 0 -f {BARCODE_PATH} -j {CPU_COUNT}"
+            f"seqkit locate {fasta} -Fi -m 0 -f {BARCODE_PATH} -j {CPU_COUNT}"
         )
         primer_command = f"seqkit locate {fasta} -d -f {PRIMER_PATH} -j {CPU_COUNT}"
 
@@ -144,7 +146,9 @@ def count_motifs(file_paths: List[str], avg_lengths: dict[str, float], verbose: 
             f.write("\n".join(primer_output))
 
         avg_length = avg_lengths[fasta]
-        barcode_counts = parse_seqkit_output(barcode_output, is_barcode=True, avg_length=avg_length)
+        barcode_counts = parse_seqkit_output(
+            barcode_output, is_barcode=True, avg_length=avg_length
+        )
         primer_counts = parse_seqkit_output(primer_output, is_barcode=False)
 
         for pattern, count in {**barcode_counts, **primer_counts}.items():
@@ -153,7 +157,9 @@ def count_motifs(file_paths: List[str], avg_lengths: dict[str, float], verbose: 
     return df
 
 
-def parse_seqkit_output(output: list[str], is_barcode: bool = False, avg_length: float = 0) -> dict[str, int]:
+def parse_seqkit_output(
+    output: list[str], is_barcode: bool = False, avg_length: float = 0
+) -> dict[str, int]:
     """
     Parse the output of seqkit locate command.
 
@@ -173,7 +179,7 @@ def parse_seqkit_output(output: list[str], is_barcode: bool = False, avg_length:
             if is_barcode:
                 try:
                     region = int(columns[4])
-                    if region <= 3 or region <= (avg_length - 3):
+                    if region <= 3 or region <= (avg_length - 10):
                         pattern_counts[pattern] = pattern_counts.get(pattern, 0) + 1
                 except ValueError:
                     continue
@@ -237,10 +243,10 @@ def main():
     try:
         file_paths = parse_input_path(args.input_path)
         read_counts = count_reads(file_paths, args.verbose)
-        
+
         # Create a dictionary of average lengths
-        avg_lengths = dict(zip(read_counts['file'], read_counts['avg_len']))
-        
+        avg_lengths = dict(zip(read_counts["file"], read_counts["avg_len"]))
+
         motif_counts = count_motifs(file_paths, avg_lengths, args.verbose)
 
         result = pd.merge(read_counts, motif_counts, on="file")
