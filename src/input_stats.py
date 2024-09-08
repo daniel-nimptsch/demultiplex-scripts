@@ -2,6 +2,7 @@ import argparse
 import os
 import re
 import subprocess
+
 import pandas as pd
 
 
@@ -73,10 +74,12 @@ def count_reads(input_path: str, file_endings: set[str]) -> pd.DataFrame:
     """
     ending = next(iter(file_endings))
     command = f"seqkit stats {input_path}/*.{ending} -T --quiet"
-    
+
     try:
-        result = subprocess.run(command, shell=True, check=True, capture_output=True, text=True)
-        df = pd.read_csv(pd.compat.StringIO(result.stdout), sep='\t')
+        result = subprocess.run(
+            command, shell=True, check=True, capture_output=True, text=True
+        )
+        df = pd.read_csv(pd.compat.StringIO(result.stdout), sep="\t")
         return df
     except subprocess.CalledProcessError as e:
         raise RuntimeError(f"Error running seqkit stats: {e}")
@@ -114,11 +117,11 @@ def main():
         file_endings, is_paired_end = parse_input_path(args.input_path)
         print(f"Found valid input files with ending: {next(iter(file_endings))}")
         print(f"Files are {'paired-end' if is_paired_end else 'single-end'}")
-        
+
         read_counts = count_reads(args.input_path, file_endings)
-        
+
         if args.output:
-            read_counts.to_csv(args.output, sep='\t', index=False)
+            read_counts.to_csv(args.output, sep="\t", index=False)
             print(f"Output saved to {args.output}")
         else:
             print(read_counts.to_string(index=False))
