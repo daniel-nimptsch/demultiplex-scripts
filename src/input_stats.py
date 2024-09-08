@@ -1,6 +1,8 @@
 import argparse
 import os
 import re
+import subprocess
+import pandas as pd
 
 
 def parse_input_path(input_path: str) -> set[str]:
@@ -41,6 +43,28 @@ def parse_input_path(input_path: str) -> set[str]:
     return endings
 
 
+def count_reads(input_path: str, file_endings: set[str]) -> pd.DataFrame:
+    """
+    Count reads in FASTA/FASTQ files using seqkit stats.
+
+    Args:
+        input_path (str): Path to the directory containing FASTA/FASTQ files
+        file_endings (set[str]): Set of file endings found in the input path
+
+    Returns:
+        pd.DataFrame: DataFrame containing the seqkit stats output
+    """
+    ending = next(iter(file_endings))
+    command = f"seqkit stats {input_path}/*.{ending} -T --quiet"
+    
+    try:
+        result = subprocess.run(command, shell=True, check=True, capture_output=True, text=True)
+        df = pd.read_csv(pd.compat.StringIO(result.stdout), sep='\t')
+        return df
+    except subprocess.CalledProcessError as e:
+        raise RuntimeError(f"Error running seqkit stats: {e}")
+
+
 def main():
     parser = argparse.ArgumentParser(
         description="Count reads in FASTA/FASTQ files and subset reads with specific adapter or primer sequences using seqkit."
@@ -72,8 +96,15 @@ def main():
     try:
         file_endings = parse_input_path(args.input_path)
         print(f"Found valid input files with ending: {next(iter(file_endings))}")
-        # TODO: Implement the logic for counting reads and generating the output TSV
-    except ValueError as e:
+        
+        read_counts = count_reads(args.input_path, file_endings)
+        
+        if args.output:
+            read_counts.to_csv(args.output, sep='\t', index=False)
+            print(f"Output saved to {args.output}")
+        else:
+            print(read_counts.to_string(index=False))
+    except (ValueError, RuntimeError) as e:
         print(f"Error: {str(e)}")
 
 
