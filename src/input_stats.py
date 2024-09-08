@@ -6,7 +6,7 @@ import subprocess
 import pandas as pd
 
 
-def parse_input_path(input_path: str) -> tuple[set[str], bool]:
+def parse_input_path(input_path: str) -> set[str]:
     """
     Parse files in the input path, extract their file endings, and check if they are paired-end.
 
@@ -58,7 +58,7 @@ def parse_input_path(input_path: str) -> tuple[set[str], bool]:
 
     is_paired_end = len(paired_files) > 0 and len(unpaired_files) == 0
 
-    return endings, is_paired_end
+    return endings
 
 
 def count_reads(input_path: str, file_endings: set[str]) -> pd.DataFrame:
@@ -73,7 +73,7 @@ def count_reads(input_path: str, file_endings: set[str]) -> pd.DataFrame:
         pd.DataFrame: DataFrame containing the seqkit stats output
     """
     ending = next(iter(file_endings))
-    command = f"seqkit stats {input_path}/*.{ending} -T --quiet"
+    command = f"seqkit stats {input_path}/*{1,2}*.{ending} -T --quiet"
 
     try:
         result = subprocess.run(
@@ -114,15 +114,11 @@ def main():
     args = parser.parse_args()
 
     try:
-        file_endings, is_paired_end = parse_input_path(args.input_path)
-        print(f"Found valid input files with ending: {next(iter(file_endings))}")
-        print(f"Files are {'paired-end' if is_paired_end else 'single-end'}")
-
+        file_endings = parse_input_path(args.input_path)
         read_counts = count_reads(args.input_path, file_endings)
 
         if args.output:
             read_counts.to_csv(args.output, sep="\t", index=False)
-            print(f"Output saved to {args.output}")
         else:
             print(read_counts.to_string(index=False))
     except (ValueError, RuntimeError) as e:
