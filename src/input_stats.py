@@ -7,6 +7,11 @@ import subprocess
 import pandas as pd
 from Bio import SeqIO
 
+FORWARD_BARCODE_PATH = ""
+REVERSE_BARCODE_PATH = ""
+FORWARD_PRIMER_PATH = ""
+REVERSE_PRIMER_PATH = ""
+
 
 def parse_input_path(input_path: str) -> list[str]:
     """
@@ -74,25 +79,17 @@ def count_reads(file_paths: list[str]) -> pd.DataFrame:
         pd.DataFrame: DataFrame containing the file and num_seqs columns from seqkit stats output
     """
     file_paths_str = " ".join(file_paths)
-    command = f"seqkit stats {file_paths_str} -T --quiet"
+    command = f"seqkit stats {file_paths_str} -T --quiet -j 8"
 
     try:
         result = subprocess.run(
             command, shell=True, check=True, capture_output=True, text=True
         )
         df = pd.read_csv(io.StringIO(result.stdout), sep="\t")
-        # Keep only the 'file' and 'num_seqs' columns
         df = df[["file", "num_seqs"]]
         return df
     except subprocess.CalledProcessError as e:
         raise RuntimeError(f"Error running seqkit stats: {e}")
-
-
-# Global variables for barcode and primer FASTA paths
-FORWARD_BARCODE_PATH = ""
-REVERSE_BARCODE_PATH = ""
-FORWARD_PRIMER_PATH = ""
-REVERSE_PRIMER_PATH = ""
 
 
 def get_motifs() -> dict:
@@ -129,25 +126,23 @@ def count_motifs(file_paths: list[str]) -> pd.DataFrame:
         pd.DataFrame: DataFrame with columns for file paths and motif counts
     """
     motifs = get_motifs()
-    print(motifs)
 
     df = pd.DataFrame({"file": file_paths})
 
     for motif_name, motif_seq in motifs.items():
         counts = []
         for fasta in file_paths:
-            command = f"seqkit grep {fasta} -i -s -p {motif_seq} -C -j $(nproc)"
+            command = f"seqkit grep {fasta} -i -C -s -j 8 -p {motif_seq} --quiet"
             try:
                 result = subprocess.run(
                     command, shell=True, check=True, capture_output=True, text=True
                 )
                 output_lines = result.stdout.strip().split("\n")
+                print(command)
+                print(output_lines)
                 if int(output_lines[0]):
                     count = int(output_lines[0])
                 else:
-                    print(
-                        f"Warning: Unexpected output format for motif {motif_name} in file {fasta}"
-                    )
                     count = pd.NA
             except subprocess.CalledProcessError as e:
                 print(

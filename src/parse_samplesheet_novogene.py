@@ -1,6 +1,6 @@
-from pathlib import Path
 import argparse
 import csv
+from pathlib import Path
 
 
 def parse_samplesheet(samplesheet_path):
@@ -28,9 +28,9 @@ def parse_samplesheet(samplesheet_path):
                     reverse_barcode,
                     forward_barcode_name,
                     reverse_barcode_name,
-                    primer_name,
                     forward_primer,
                     reverse_primer,
+                    primer_name,
                 )
             )
 
