@@ -125,12 +125,17 @@ def count_motifs(file_paths: List[str], verbose: bool = False) -> pd.DataFrame:
         barcode_command = f"seqkit locate {fasta} -FPi -m 0 -f {BARCODE_PATH}"
         primer_command = f"seqkit locate {fasta} -d -f {PRIMER_PATH}"
 
-        barcode_counts = parse_seqkit_output(
-            run_command(barcode_command, verbose), is_barcode=True
-        )
-        primer_counts = parse_seqkit_output(
-            run_command(primer_command, verbose), is_barcode=False
-        )
+        barcode_output = run_command(barcode_command, verbose)
+        primer_output = run_command(primer_command, verbose)
+
+        # Write raw outputs to files
+        with open("barcode_locate.tsv", "w") as f:
+            f.write("\n".join(barcode_output))
+        with open("primer_locate.tsv", "w") as f:
+            f.write("\n".join(primer_output))
+
+        barcode_counts = parse_seqkit_output(barcode_output, is_barcode=True)
+        primer_counts = parse_seqkit_output(primer_output, is_barcode=False)
 
         for pattern, count in {**barcode_counts, **primer_counts}.items():
             df.loc[df["file"] == fasta, pattern] = count
