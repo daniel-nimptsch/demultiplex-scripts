@@ -104,7 +104,7 @@ def count_motifs(file_paths: list[str]) -> pd.DataFrame:
 
     counts = []
     for fasta in file_paths:
-        command = f"seqkit locate {fasta} -i -C -s -j 8 -r -p {motif_seq} --quiet"
+        command = f"seqkit locate {fasta} -dIM -f {BARCODE_PATH}"
         try:
             result = subprocess.run(
                 command, shell=True, check=True, capture_output=True, text=True
