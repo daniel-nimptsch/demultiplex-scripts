@@ -25,9 +25,9 @@ def main():
         "--reverse_primer", help="Path to the reverse primer FASTA file"
     )
     _ = parser.add_argument(
-        "--output",
-        default="read_counts.tsv",
-        help="Output TSV file name (default: read_counts.tsv)",
+        "-o", "--output",
+        default=None,
+        help="Output TSV file path. If not specified, output will be printed to stdout.",
     )
 
     args = parser.parse_args()
