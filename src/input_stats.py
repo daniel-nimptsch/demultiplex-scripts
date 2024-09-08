@@ -28,7 +28,10 @@ def parse_input_path(input_path: str) -> set[str]:
     for file in os.listdir(input_path):
         file_path = os.path.join(input_path, file)
         if os.path.isfile(file_path):
-            match = re.match(r"^(.+)([12])\.([^.]+)(\.gz)?$", file)
+            # Regex for paired-end files: base_name + 1 or 2 + .extension + optional .gz
+            # Example: sample_R1.fastq.gz or sample_2.fq
+            paired_end_pattern = r"^(.+)([12])\.([^.]+)(\.gz)?$"
+            match = re.match(paired_end_pattern, file)
             if match:
                 base_name, _, ending, _ = match.groups()
                 ending = ending.lower()
@@ -37,7 +40,10 @@ def parse_input_path(input_path: str) -> set[str]:
                     endings.add(ending)
                     paired_files.add(base_name)
             else:
-                match = re.match(r"^(.+)\.([^.]+)(\.gz)?$", file)
+                # Regex for single-end files: base_name + .extension + optional .gz
+                # Example: sample.fastq or sample.fq.gz
+                single_end_pattern = r"^(.+)\.([^.]+)(\.gz)?$"
+                match = re.match(single_end_pattern, file)
                 if match:
                     base_name, ending, _ = match.groups()
                     ending = ending.lower()
