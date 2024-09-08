@@ -100,18 +100,23 @@ def count_motifs(file_paths: list[str]) -> pd.DataFrame:
         pd.DataFrame: DataFrame with columns for file paths and motif counts
     """
     df = pd.DataFrame({"file": file_paths})
-    
+
     for fasta in file_paths:
         barcode_command = f"seqkit locate {fasta} -M -m 1 -f {BARCODE_PATH} | wc -l"
         primer_command = f"seqkit locate {fasta} -dM -f {PRIMER_PATH} | wc -l"
-        
-        barcode_count = int(run_command(barcode_command)[0]) - 1  # Subtract 1 to exclude header
-        primer_count = int(run_command(primer_command)[0]) - 1  # Subtract 1 to exclude header
-        
-        df.loc[df['file'] == fasta, 'barcode_count'] = barcode_count
-        df.loc[df['file'] == fasta, 'primer_count'] = primer_count
-    
+
+        barcode_count = (
+            int(run_command(barcode_command)[0]) - 1
+        )  # Subtract 1 to exclude header
+        primer_count = (
+            int(run_command(primer_command)[0]) - 1
+        )  # Subtract 1 to exclude header
+
+        df.loc[df["file"] == fasta, "barcode_count"] = barcode_count
+        df.loc[df["file"] == fasta, "primer_count"] = primer_count
+
     return df
+
 
 def run_command(command: str) -> list[str]:
     result = subprocess.run(
@@ -147,7 +152,7 @@ def main():
         file_paths = parse_input_path(args.input_path)
         read_counts = count_reads(file_paths)
         motif_counts = count_motifs(file_paths)
-        
+
         result = pd.merge(read_counts, motif_counts, on="file")
 
         if args.output:
