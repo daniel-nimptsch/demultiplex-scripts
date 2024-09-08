@@ -119,7 +119,7 @@ def get_motifs() -> dict:
 
 def count_motifs(file_paths: list[str]) -> pd.DataFrame:
     """
-    Count motifs in the input files.
+    Count motifs in the input files using seqkit grep.
 
     Args:
         file_paths (list[str]): List of file paths to process
@@ -129,17 +129,20 @@ def count_motifs(file_paths: list[str]) -> pd.DataFrame:
     """
     motifs = get_motifs()
     
-    # Placeholder for motif counting logic
-    # This is where you would implement the actual motif counting
-    # For now, we'll just create a DataFrame with dummy counts
+    df = pd.DataFrame({"file": file_paths})
 
-    df = pd.DataFrame({
-        "file": file_paths,
-        "forward_barcode_count": [0] * len(file_paths),
-        "reverse_barcode_count": [0] * len(file_paths),
-        "forward_primer_count": [0] * len(file_paths),
-        "reverse_primer_count": [0] * len(file_paths)
-    })
+    for motif_type, motif_dict in motifs.items():
+        for motif_name, motif_seq in motif_dict.items():
+            counts = []
+            for fasta in file_paths:
+                command = f"seqkit grep {fasta} -i -s -p {motif_seq} -C -j $(nproc)"
+                try:
+                    result = subprocess.run(command, shell=True, check=True, capture_output=True, text=True)
+                    count = int(result.stdout.strip().split('\n')[0].split('\t')[1])
+                except subprocess.CalledProcessError:
+                    count = 0
+                counts.append(count)
+            df[motif_name] = counts
 
     return df
 
