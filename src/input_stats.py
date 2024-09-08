@@ -6,9 +6,11 @@ import subprocess
 from typing import List
 
 import pandas as pd
+import multiprocessing
 
 BARCODE_PATH = ""
 PRIMER_PATH = ""
+CPU_COUNT = multiprocessing.cpu_count()
 
 
 def parse_input_path(input_path: str) -> list[str]:
@@ -78,7 +80,7 @@ def count_reads(file_paths: List[str], verbose: bool = False) -> pd.DataFrame:
         pd.DataFrame: DataFrame containing the file and num_seqs columns from seqkit stats output
     """
     file_paths_str = " ".join(file_paths)
-    command = f"seqkit stats {file_paths_str} -T --quiet -j 8"
+    command = f"seqkit stats {file_paths_str} -T --quiet -j {CPU_COUNT}"
 
     if verbose:
         print(command)
@@ -109,8 +111,8 @@ def count_motifs(file_paths: List[str], verbose: bool = False) -> pd.DataFrame:
     """
     df = pd.DataFrame({"file": file_paths})
 
-    barcode_command = f"seqkit seq -n {BARCODE_PATH}"
-    primer_command = f"seqkit seq -n {PRIMER_PATH}"
+    barcode_command = f"seqkit seq -n {BARCODE_PATH} -j {CPU_COUNT}"
+    primer_command = f"seqkit seq -n {PRIMER_PATH} -j {CPU_COUNT}"
 
     barcode_patterns = set(run_command(barcode_command, verbose))
     primer_patterns = set(run_command(primer_command, verbose))
@@ -120,8 +122,8 @@ def count_motifs(file_paths: List[str], verbose: bool = False) -> pd.DataFrame:
         df[pattern] = 0
 
     for fasta in file_paths:
-        barcode_command = f"seqkit locate {fasta} -FPi -m 0 -f {BARCODE_PATH}"
-        primer_command = f"seqkit locate {fasta} -d -f {PRIMER_PATH}"
+        barcode_command = f"seqkit locate {fasta} -FPi -m 0 -f {BARCODE_PATH} -j {CPU_COUNT}"
+        primer_command = f"seqkit locate {fasta} -d -f {PRIMER_PATH} -j {CPU_COUNT}"
 
         barcode_output = run_command(barcode_command, verbose)
         primer_output = run_command(primer_command, verbose)
