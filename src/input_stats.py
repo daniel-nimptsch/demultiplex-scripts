@@ -21,10 +21,10 @@ def parse_input_path(input_path: str) -> tuple[set[str], bool]:
         ValueError: If file endings are not identical or not in accepted formats
     """
     accepted_endings = {"fasta", "fastq", "fq", "fa", "fna"}
-    file_list = set()
-    endings = set()
-    paired_files = set()
-    unpaired_files = set()
+    file_list: set[str] = set()
+    endings: set[str] = set()
+    paired_files: set[str] = set()
+    unpaired_files: set[str] = set()
 
     for file in os.listdir(input_path):
         file_path = os.path.join(input_path, file)
