@@ -71,7 +71,7 @@ def count_reads(input_path: str, file_endings: set[str]) -> pd.DataFrame:
         file_endings (set[str]): Set of file endings found in the input path
 
     Returns:
-        pd.DataFrame: DataFrame containing the seqkit stats output
+        pd.DataFrame: DataFrame containing the file and num_seqs columns from seqkit stats output
     """
     ending = next(iter(file_endings))
     command = f"seqkit stats {input_path}/*{{1,2}}.{ending} -T --quiet"
@@ -81,6 +81,8 @@ def count_reads(input_path: str, file_endings: set[str]) -> pd.DataFrame:
             command, shell=True, check=True, capture_output=True, text=True
         )
         df = pd.read_csv(io.StringIO(result.stdout), sep="\t")
+        # Keep only the 'file' and 'num_seqs' columns
+        df = df[['file', 'num_seqs']]
         return df
     except subprocess.CalledProcessError as e:
         raise RuntimeError(f"Error running seqkit stats: {e}")
