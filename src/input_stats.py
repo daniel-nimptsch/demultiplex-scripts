@@ -172,6 +172,19 @@ def parse_seqkit_output(output: list[str], is_barcode: bool = False) -> dict[str
 
 
 def run_command(command: str, verbose: bool = False) -> List[str]:
+    """
+    Execute a shell command and return its output as a list of strings.
+
+    Args:
+        command (str): The shell command to execute.
+        verbose (bool): If True, print the command and its output.
+
+    Returns:
+        List[str]: The command's output split into lines.
+
+    Raises:
+        subprocess.CalledProcessError: If the command execution fails.
+    """
     if verbose:
         print(command)
     result = subprocess.run(
