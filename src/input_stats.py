@@ -87,24 +87,33 @@ def count_reads(file_paths: list[str]) -> pd.DataFrame:
         raise RuntimeError(f"Error running seqkit stats: {e}")
 
 
-def count_motifs(df: pd.DataFrame) -> pd.DataFrame:
+# Global variables for barcode and primer FASTA paths
+FORWARD_BARCODE_PATH = ""
+REVERSE_BARCODE_PATH = ""
+FORWARD_PRIMER_PATH = ""
+REVERSE_PRIMER_PATH = ""
+
+def count_motifs(file_paths: list[str]) -> pd.DataFrame:
     """
     Count motifs in the input files.
 
     Args:
-        df (pd.DataFrame): DataFrame containing file paths and read counts
+        file_paths (list[str]): List of file paths to process
 
     Returns:
-        pd.DataFrame: DataFrame with added columns for motif counts
+        pd.DataFrame: DataFrame with columns for file paths and motif counts
     """
     # Placeholder for motif counting logic
     # This is where you would implement the actual motif counting
-    # For now, we'll just add dummy columns
+    # For now, we'll just create a DataFrame with dummy counts
 
-    df["forward_barcode_count"] = 0
-    df["reverse_barcode_count"] = 0
-    df["forward_primer_count"] = 0
-    df["reverse_primer_count"] = 0
+    df = pd.DataFrame({
+        "file": file_paths,
+        "forward_barcode_count": [0] * len(file_paths),
+        "reverse_barcode_count": [0] * len(file_paths),
+        "forward_primer_count": [0] * len(file_paths),
+        "reverse_primer_count": [0] * len(file_paths)
+    })
 
     return df
 
@@ -137,15 +146,25 @@ def main():
 
     args = parser.parse_args()
 
+    # Set global variables for barcode and primer FASTA paths
+    global FORWARD_BARCODE_PATH, REVERSE_BARCODE_PATH, FORWARD_PRIMER_PATH, REVERSE_PRIMER_PATH
+    FORWARD_BARCODE_PATH = args.forward_barcode
+    REVERSE_BARCODE_PATH = args.reverse_barcode
+    FORWARD_PRIMER_PATH = args.forward_primer
+    REVERSE_PRIMER_PATH = args.reverse_primer
+
     try:
         file_paths = parse_input_path(args.input_path)
         read_counts = count_reads(file_paths)
-        motif_counts = count_motifs(read_counts)
+        motif_counts = count_motifs(file_paths)
+
+        # Merge read_counts and motif_counts DataFrames
+        result = pd.merge(read_counts, motif_counts, on="file")
 
         if args.output:
-            motif_counts.to_csv(args.output, sep="\t", index=False)
+            result.to_csv(args.output, sep="\t", index=False)
         else:
-            print(motif_counts.to_string(index=False))
+            print(result.to_string(index=False))
 
     except (ValueError, RuntimeError) as e:
         print(f"Error: {str(e)}")
