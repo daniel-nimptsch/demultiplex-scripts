@@ -51,7 +51,9 @@ def parse_input_path(input_path: str) -> set[str]:
 
     incomplete_pairs = [base for base, reads in paired_files.items() if len(reads) != 2]
     if incomplete_pairs:
-        raise ValueError(f"Incomplete paired-end files found for: {', '.join(incomplete_pairs)}")
+        raise ValueError(
+            f"Incomplete paired-end files found for: {', '.join(incomplete_pairs)}"
+        )
 
     return endings
 
@@ -68,7 +70,7 @@ def count_reads(input_path: str, file_endings: set[str]) -> pd.DataFrame:
         pd.DataFrame: DataFrame containing the seqkit stats output
     """
     ending = next(iter(file_endings))
-    command = f"seqkit stats {input_path}/*{{1,2}}*.{ending} -T --quiet"
+    command = f"seqkit stats {input_path}/*{{1,2}}.{ending} -T --quiet"
 
     try:
         result = subprocess.run(
