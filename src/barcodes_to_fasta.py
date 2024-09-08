@@ -42,11 +42,16 @@ def create_fasta(barcodes, output_dir, include_primers):
 
     forward_fasta = output_dir / "barcodes_fwd.fasta"
     reverse_fasta = output_dir / "barcodes_rev.fasta"
+    forward_primer_fasta = output_dir / "primers_fwd.fasta"
+    reverse_primer_fasta = output_dir / "primers_rev.fasta"
 
     seen_forward_barcodes = set()
     seen_reverse_barcodes = set()
+    seen_forward_primers = set()
+    seen_reverse_primers = set()
 
-    with forward_fasta.open("w") as fwd_file, reverse_fasta.open("w") as rev_file:
+    with forward_fasta.open("w") as fwd_file, reverse_fasta.open("w") as rev_file, \
+         forward_primer_fasta.open("w") as fwd_primer_file, reverse_primer_fasta.open("w") as rev_primer_file:
         for (
             sample_name,
             forward_barcode,
@@ -77,7 +82,17 @@ def create_fasta(barcodes, output_dir, include_primers):
                 if include_primers:
                     reverse_barcode += reverse_primer
                 rev_file.write(f">{reverse_barcode_name}\n{reverse_barcode}\n")
-    return forward_fasta, reverse_fasta
+
+            if not include_primers:
+                if forward_primer not in seen_forward_primers:
+                    seen_forward_primers.add(forward_primer)
+                    fwd_primer_file.write(f">{forward_barcode_name}_primer\n{forward_primer}\n")
+
+                if reverse_primer not in seen_reverse_primers:
+                    seen_reverse_primers.add(reverse_primer)
+                    rev_primer_file.write(f">{reverse_barcode_name}_primer\n{reverse_primer}\n")
+
+    return forward_fasta, reverse_fasta, forward_primer_fasta, reverse_primer_fasta
 
 
 def save_patterns(barcodes, output_dir):
@@ -143,8 +158,12 @@ def main():
 
     barcodes = parse_samplesheet(args.samplesheet)
     output_dir = Path(args.output)
-    create_fasta(barcodes, output_dir, args.include_primers)
+    forward_fasta, reverse_fasta, forward_primer_fasta, reverse_primer_fasta = create_fasta(barcodes, output_dir, args.include_primers)
     save_patterns(barcodes, output_dir)
+    
+    print(f"Created barcode FASTA files: {forward_fasta}, {reverse_fasta}")
+    if not args.include_primers:
+        print(f"Created primer FASTA files: {forward_primer_fasta}, {reverse_primer_fasta}")
 
 
 if __name__ == "__main__":
