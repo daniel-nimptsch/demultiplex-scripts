@@ -1,12 +1,12 @@
 import argparse
 import io
+import multiprocessing
 import os
 import re
 import subprocess
 from typing import List
 
 import pandas as pd
-import multiprocessing
 
 BARCODE_PATH = ""
 PRIMER_PATH = ""
@@ -122,7 +122,9 @@ def count_motifs(file_paths: List[str], verbose: bool = False) -> pd.DataFrame:
         df[pattern] = 0
 
     for fasta in file_paths:
-        barcode_command = f"seqkit locate {fasta} -FPi -m 0 -f {BARCODE_PATH} -j {CPU_COUNT}"
+        barcode_command = (
+            f"seqkit locate {fasta} -FPi -m 0 -f {BARCODE_PATH} -j {CPU_COUNT}"
+        )
         primer_command = f"seqkit locate {fasta} -d -f {PRIMER_PATH} -j {CPU_COUNT}"
 
         barcode_output = run_command(barcode_command, verbose)
