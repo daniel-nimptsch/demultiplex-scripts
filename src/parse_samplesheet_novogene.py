@@ -18,6 +18,7 @@ def parse_samplesheet(samplesheet_path):
             reverse_barcode = row[2].split(" ")[0]
             forward_barcode_name = row[3]
             reverse_barcode_name = row[4]
+            primer_name = row[5]
             forward_primer = row[1].split(" ")[1]
             reverse_primer = row[2].split(" ")[1]
             barcodes.append(
@@ -27,6 +28,7 @@ def parse_samplesheet(samplesheet_path):
                     reverse_barcode,
                     forward_barcode_name,
                     reverse_barcode_name,
+                    primer_name,
                     forward_primer,
                     reverse_primer,
                 )
