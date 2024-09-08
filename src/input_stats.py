@@ -6,7 +6,7 @@ import subprocess
 import pandas as pd
 
 
-def parse_input_path(input_path: str) -> set[str]:
+def parse_input_path(input_path: str) -> tuple[set[str], bool]:
     """
     Parse files in the input path, extract their file endings, and check if they are paired-end.
 
@@ -19,7 +19,7 @@ def parse_input_path(input_path: str) -> set[str]:
             - Boolean indicating if the files are paired-end
 
     Raises:
-        ValueError: If file endings are not identical or not in accepted formats
+        ValueError: If no valid files are found, file endings are not identical, or not in accepted formats
     """
     accepted_endings = {"fasta", "fastq", "fq", "fa", "fna"}
     file_list: set[str] = set()
@@ -58,7 +58,7 @@ def parse_input_path(input_path: str) -> set[str]:
 
     is_paired_end = len(paired_files) > 0 and len(unpaired_files) == 0
 
-    return endings
+    return endings, is_paired_end
 
 
 def count_reads(input_path: str, file_endings: set[str]) -> pd.DataFrame:
@@ -114,8 +114,11 @@ def main():
     args = parser.parse_args()
 
     try:
-        file_endings = parse_input_path(args.input_path)
+        file_endings, is_paired_end = parse_input_path(args.input_path)
         read_counts = count_reads(args.input_path, file_endings)
+        
+        # You can use is_paired_end here if needed
+        print(f"Files are {'paired-end' if is_paired_end else 'single-end'}")
 
         if args.output:
             read_counts.to_csv(args.output, sep="\t", index=False)
