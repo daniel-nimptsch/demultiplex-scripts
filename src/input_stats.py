@@ -3,6 +3,7 @@ import io
 import os
 import re
 import subprocess
+from Bio import SeqIO
 
 import pandas as pd
 
@@ -93,6 +94,29 @@ REVERSE_BARCODE_PATH = ""
 FORWARD_PRIMER_PATH = ""
 REVERSE_PRIMER_PATH = ""
 
+def get_motifs() -> dict:
+    """
+    Read all barcode and primer FASTA files and store the sequence names and sequences as a dictionary.
+
+    Returns:
+        dict: A dictionary containing motif types as keys and dictionaries of sequence names and sequences as values.
+    """
+    motif_files = {
+        "forward_barcode": FORWARD_BARCODE_PATH,
+        "reverse_barcode": REVERSE_BARCODE_PATH,
+        "forward_primer": FORWARD_PRIMER_PATH,
+        "reverse_primer": REVERSE_PRIMER_PATH
+    }
+
+    motifs = {}
+    for motif_type, file_path in motif_files.items():
+        motifs[motif_type] = {}
+        with open(file_path, "r") as handle:
+            for record in SeqIO.parse(handle, "fasta"):
+                motifs[motif_type][record.id] = str(record.seq)
+
+    return motifs
+
 def count_motifs(file_paths: list[str]) -> pd.DataFrame:
     """
     Count motifs in the input files.
@@ -103,6 +127,8 @@ def count_motifs(file_paths: list[str]) -> pd.DataFrame:
     Returns:
         pd.DataFrame: DataFrame with columns for file paths and motif counts
     """
+    motifs = get_motifs()
+    
     # Placeholder for motif counting logic
     # This is where you would implement the actual motif counting
     # For now, we'll just create a DataFrame with dummy counts
