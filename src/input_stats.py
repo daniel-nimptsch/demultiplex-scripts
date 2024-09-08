@@ -7,21 +7,21 @@ import subprocess
 import pandas as pd
 
 
-def parse_input_path(input_path: str) -> set[str]:
+def parse_input_path(input_path: str) -> list[str]:
     """
-    Parse files in the input path, extract their file endings, and ensure they are paired-end.
+    Parse files in the input path, ensure they are paired-end, and return their file paths.
 
     Args:
         input_path (str): Path to the directory containing FASTA/FASTQ files
 
     Returns:
-        set[str]: Set of file endings found
+        list[str]: List of file paths for valid paired-end FASTA/FASTQ files
 
     Raises:
         ValueError: If no valid files are found, file endings are not identical, not in accepted formats, or not paired-end
     """
     accepted_endings = {"fasta", "fastq", "fq", "fa", "fna"}
-    file_list: set[str] = set()
+    file_list: list[str] = []
     endings: set[str] = set()
     paired_files: dict[str, list[str]] = {}
 
@@ -36,7 +36,7 @@ def parse_input_path(input_path: str) -> set[str]:
                 base_name, read_number, ending, gz = match.groups()
                 ending = ending.lower()
                 if ending in accepted_endings:
-                    file_list.add(file_path)
+                    file_list.append(file_path)
                     if gz:
                         endings.add(f"{ending}.gz")
                     else:
@@ -59,22 +59,21 @@ def parse_input_path(input_path: str) -> set[str]:
             f"Incomplete paired-end files found for: {', '.join(incomplete_pairs)}"
         )
 
-    return endings
+    return file_list
 
 
-def count_reads(input_path: str, file_endings: set[str]) -> pd.DataFrame:
+def count_reads(file_paths: list[str]) -> pd.DataFrame:
     """
     Count reads in FASTA/FASTQ files using seqkit stats.
 
     Args:
-        input_path (str): Path to the directory containing FASTA/FASTQ files
-        file_endings (set[str]): Set of file endings found in the input path
+        file_paths (list[str]): List of file paths to process
 
     Returns:
         pd.DataFrame: DataFrame containing the file and num_seqs columns from seqkit stats output
     """
-    ending = next(iter(file_endings))
-    command = f"seqkit stats {input_path}/*{{1,2}}.{ending} -T --quiet"
+    file_paths_str = " ".join(file_paths)
+    command = f"seqkit stats {file_paths_str} -T --quiet"
 
     try:
         result = subprocess.run(
@@ -139,8 +138,8 @@ def main():
     args = parser.parse_args()
 
     try:
-        file_endings = parse_input_path(args.input_path)
-        read_counts = count_reads(args.input_path, file_endings)
+        file_paths = parse_input_path(args.input_path)
+        read_counts = count_reads(file_paths)
         motif_counts = count_motifs(read_counts)
 
         if args.output:
