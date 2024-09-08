@@ -4,21 +4,21 @@ import re
 from typing import list, tuple
 
 
-def get_input_files(input_path: str) -> list[tuple[str, str]]:
+def parse_input_path(input_path: str) -> set[str]:
     """
-    List files in the input path and extract their file endings.
+    Parse files in the input path and extract their file endings.
 
     Args:
         input_path (str): Path to the directory containing FASTA/FASTQ files
 
     Returns:
-        List[Tuple[str, str]]: List of tuples containing (file_path, file_ending)
+        set[str]: Set of file endings found
 
     Raises:
         ValueError: If file endings are not identical or not in accepted formats
     """
     accepted_endings = {"fasta", "fastq", "fq", "fa", "fna"}
-    file_list = []
+    file_list = set()
     endings = set()
 
     for file in os.listdir(input_path):
@@ -28,7 +28,7 @@ def get_input_files(input_path: str) -> list[tuple[str, str]]:
             if match:
                 ending = match.group(1).lower()
                 if ending in accepted_endings:
-                    file_list.append((file_path, ending))
+                    file_list.add(file_path)
                     endings.add(ending)
 
     if not file_list:
@@ -39,7 +39,7 @@ def get_input_files(input_path: str) -> list[tuple[str, str]]:
             f"Multiple file endings found: {', '.join(endings)}. All files should have the same ending."
         )
 
-    return file_list
+    return endings
 
 
 def main():
@@ -71,8 +71,8 @@ def main():
     args = parser.parse_args()
 
     try:
-        input_files = get_input_files(args.input_path)
-        print(f"Found {len(input_files)} valid input files.")
+        file_endings = parse_input_path(args.input_path)
+        print(f"Found valid input files with ending: {next(iter(file_endings))}")
         # TODO: Implement the logic for counting reads and generating the output TSV
     except ValueError as e:
         print(f"Error: {str(e)}")
