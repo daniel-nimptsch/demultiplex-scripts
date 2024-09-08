@@ -81,14 +81,13 @@ def count_reads(file_paths: List[str], verbose: bool = False) -> pd.DataFrame:
     command = f"seqkit stats {file_paths_str} -T --quiet -j 8"
 
     if verbose:
-        print(f"Executing command: {command}")
+        print(command)
 
     try:
         result = subprocess.run(
             command, shell=True, check=True, capture_output=True, text=True
         )
         if verbose:
-            print("Command output:")
             print(result.stdout)
         df = pd.read_csv(io.StringIO(result.stdout), sep="\t")
         df = df[["file", "num_seqs"]]
@@ -114,10 +113,6 @@ def count_motifs(file_paths: List[str], verbose: bool = False) -> pd.DataFrame:
     barcode_command = f"seqkit seq -n {BARCODE_PATH}"
     primer_command = f"seqkit seq -n {PRIMER_PATH}"
 
-    if verbose:
-        print(f"Executing command: {barcode_command}")
-        print(f"Executing command: {primer_command}")
-
     barcode_patterns = set(run_command(barcode_command, verbose))
     primer_patterns = set(run_command(primer_command, verbose))
     all_patterns = barcode_patterns.union(primer_patterns)
@@ -127,15 +122,10 @@ def count_motifs(file_paths: List[str], verbose: bool = False) -> pd.DataFrame:
         df[pattern] = 0
 
     for fasta in file_paths:
-        barcode_command = f"seqkit locate -t {fasta} -M -m 1 -f {BARCODE_PATH}"
-        primer_command = f"seqkit locate -t {fasta} -dM -f {PRIMER_PATH}"
+        barcode_command = f"seqkit locate {fasta} -FPi -m 0 -f {BARCODE_PATH}"
+        primer_command = f"seqkit locate {fasta} -d -f {PRIMER_PATH}"
 
-        if verbose:
-            print(f"Executing command: {barcode_command}")
         barcode_counts = parse_seqkit_output(run_command(barcode_command, verbose))
-
-        if verbose:
-            print(f"Executing command: {primer_command}")
         primer_counts = parse_seqkit_output(run_command(primer_command, verbose))
 
         for pattern, count in {**barcode_counts, **primer_counts}.items():
@@ -164,11 +154,12 @@ def parse_seqkit_output(output: list[str]) -> dict[str, int]:
 
 
 def run_command(command: str, verbose: bool = False) -> List[str]:
+    if verbose:
+        print(command)
     result = subprocess.run(
         command, shell=True, check=True, capture_output=True, text=True
     )
     if verbose:
-        print("Command output:")
         print(result.stdout)
     return result.stdout.strip().split("\n")
 
