@@ -6,20 +6,18 @@ import subprocess
 import pandas as pd
 
 
-def parse_input_path(input_path: str) -> tuple[set[str], bool]:
+def parse_input_path(input_path: str) -> set[str]:
     """
-    Parse files in the input path, extract their file endings, and check if they are paired-end.
+    Parse files in the input path, extract their file endings, and ensure they are paired-end.
 
     Args:
         input_path (str): Path to the directory containing FASTA/FASTQ files
 
     Returns:
-        tuple[set[str], bool]: A tuple containing:
-            - Set of file endings found
-            - Boolean indicating if the files are paired-end
+        set[str]: Set of file endings found
 
     Raises:
-        ValueError: If no valid files are found, file endings are not identical, or not in accepted formats
+        ValueError: If no valid files are found, file endings are not identical, not in accepted formats, or not paired-end
     """
     accepted_endings = {"fasta", "fastq", "fq", "fa", "fna"}
     file_list: set[str] = set()
@@ -56,9 +54,10 @@ def parse_input_path(input_path: str) -> tuple[set[str], bool]:
             f"Multiple file endings found: {', '.join(endings)}. All files should have the same ending."
         )
 
-    is_paired_end = len(paired_files) > 0 and len(unpaired_files) == 0
+    if not (len(paired_files) > 0 and len(unpaired_files) == 0):
+        raise ValueError("All files must be paired-end")
 
-    return endings, is_paired_end
+    return endings
 
 
 def count_reads(input_path: str, file_endings: set[str]) -> pd.DataFrame:
@@ -114,11 +113,8 @@ def main():
     args = parser.parse_args()
 
     try:
-        file_endings, is_paired_end = parse_input_path(args.input_path)
+        file_endings = parse_input_path(args.input_path)
         read_counts = count_reads(args.input_path, file_endings)
-        
-        # You can use is_paired_end here if needed
-        print(f"Files are {'paired-end' if is_paired_end else 'single-end'}")
 
         if args.output:
             read_counts.to_csv(args.output, sep="\t", index=False)
