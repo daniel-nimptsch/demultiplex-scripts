@@ -109,7 +109,6 @@ def count_motifs(file_paths: List[str], verbose: bool = False) -> pd.DataFrame:
     """
     df = pd.DataFrame({"file": file_paths})
 
-    # Get all pattern names from barcode and primer files
     barcode_command = f"seqkit seq -n {BARCODE_PATH}"
     primer_command = f"seqkit seq -n {PRIMER_PATH}"
 
@@ -117,7 +116,6 @@ def count_motifs(file_paths: List[str], verbose: bool = False) -> pd.DataFrame:
     primer_patterns = set(run_command(primer_command, verbose))
     all_patterns = barcode_patterns.union(primer_patterns)
 
-    # Initialize columns for all patterns with 0
     for pattern in all_patterns:
         df[pattern] = 0
 
@@ -165,7 +163,6 @@ def parse_seqkit_output(output: list[str], is_barcode: bool = False) -> dict[str
                     if region <= 1:
                         pattern_counts[pattern] = pattern_counts.get(pattern, 0) + 1
                 except ValueError:
-                    # If column 5 is not an integer, skip this line
                     continue
             else:
                 pattern_counts[pattern] = pattern_counts.get(pattern, 0) + 1
