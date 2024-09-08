@@ -20,6 +20,7 @@ def parse_samplesheet(samplesheet_file):
         reverse_barcode_name = row[4]
         forward_primer = row[5]
         reverse_primer = row[6]
+        primer_name = row[7]
         barcodes.append(
             (
                 sample_name,
@@ -29,12 +30,13 @@ def parse_samplesheet(samplesheet_file):
                 reverse_barcode_name,
                 forward_primer,
                 reverse_primer,
+                primer_name,
             )
         )
     return barcodes
 
 
-def create_fasta(barcodes, output_dir, include_primers, primer_name="primer"):
+def create_fasta(barcodes, output_dir, include_primers):
     """
     Create FASTA files from the samplesheet.
     """
@@ -65,6 +67,7 @@ def create_fasta(barcodes, output_dir, include_primers, primer_name="primer"):
             reverse_barcode_name,
             forward_primer,
             reverse_primer,
+            primer_name,
         ) in barcodes:
             if forward_barcode not in seen_forward_barcodes:
                 seen_forward_barcodes.add(forward_barcode)
@@ -104,6 +107,7 @@ def save_patterns(barcodes, output_dir):
             reverse_barcode_name,
             forward_primer,
             reverse_primer,
+            primer_name,
         ) in barcodes:
             pattern_1 = f"{output_dir}/demux-{forward_barcode_name}-{reverse_barcode_name}.1.fastq.gz {sample_name}_R1.fastq.gz"
             pattern_2 = f"{output_dir}/demux-{forward_barcode_name}-{reverse_barcode_name}.2.fastq.gz {sample_name}_R2.fastq.gz"
@@ -118,8 +122,8 @@ def main():
             Generate FASTA files from a samplesheet (TSV) containing sample
             names and barcodes. The samplesheet should be tab-delimited with
             the following format: sample name, forward barcode, reverse
-            barcode, forward barcode name, reverse barcode name,forward primer
-            and reverse primer.
+            barcode, forward barcode name, reverse barcode name, forward primer,
+            reverse primer, and primer name.
 
             Additionally a patterns file is generated for the use after
             cutadapts demultiplex of paired-end reads with combinatorial dual
@@ -148,19 +152,13 @@ def main():
         default=".",
         help="Directory to save the output FASTA files (default: ./)",
     )
-    parser.add_argument(
-        "--primer-name",
-        type=str,
-        default="primer",
-        help="Name to use for primers in the FASTA files (default: primer)",
-    )
 
     args = parser.parse_args()
 
     barcodes = parse_samplesheet(args.samplesheet)
     output_dir = Path(args.output)
     forward_fasta, reverse_fasta, forward_primer_fasta, reverse_primer_fasta = (
-        create_fasta(barcodes, output_dir, args.include_primers, args.primer_name)
+        create_fasta(barcodes, output_dir, args.include_primers)
     )
     save_patterns(barcodes, output_dir)
 
