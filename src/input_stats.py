@@ -5,15 +5,17 @@ import subprocess
 import pandas as pd
 
 
-def parse_input_path(input_path: str) -> set[str]:
+def parse_input_path(input_path: str) -> tuple[set[str], bool]:
     """
-    Parse files in the input path and extract their file endings.
+    Parse files in the input path, extract their file endings, and check if they are paired-end.
 
     Args:
         input_path (str): Path to the directory containing FASTA/FASTQ files
 
     Returns:
-        set[str]: Set of file endings found
+        tuple[set[str], bool]: A tuple containing:
+            - Set of file endings found
+            - Boolean indicating if the files are paired-end
 
     Raises:
         ValueError: If file endings are not identical or not in accepted formats
@@ -21,16 +23,29 @@ def parse_input_path(input_path: str) -> set[str]:
     accepted_endings = {"fasta", "fastq", "fq", "fa", "fna"}
     file_list = set()
     endings = set()
+    paired_files = set()
+    unpaired_files = set()
 
     for file in os.listdir(input_path):
         file_path = os.path.join(input_path, file)
         if os.path.isfile(file_path):
-            match = re.match(r"^.+\.([^.]+)(\.gz)?$", file)
+            match = re.match(r"^(.+)([12])\.([^.]+)(\.gz)?$", file)
             if match:
-                ending = match.group(1).lower()
+                base_name, pair_num, ending, _ = match.groups()
+                ending = ending.lower()
                 if ending in accepted_endings:
                     file_list.add(file_path)
                     endings.add(ending)
+                    paired_files.add(base_name)
+            else:
+                match = re.match(r"^(.+)\.([^.]+)(\.gz)?$", file)
+                if match:
+                    base_name, ending, _ = match.groups()
+                    ending = ending.lower()
+                    if ending in accepted_endings:
+                        file_list.add(file_path)
+                        endings.add(ending)
+                        unpaired_files.add(base_name)
 
     if not file_list:
         raise ValueError(f"No valid FASTA/FASTQ files found in {input_path}")
@@ -40,7 +55,9 @@ def parse_input_path(input_path: str) -> set[str]:
             f"Multiple file endings found: {', '.join(endings)}. All files should have the same ending."
         )
 
-    return endings
+    is_paired_end = len(paired_files) > 0 and len(unpaired_files) == 0
+
+    return endings, is_paired_end
 
 
 def count_reads(input_path: str, file_endings: set[str]) -> pd.DataFrame:
@@ -94,8 +111,9 @@ def main():
     args = parser.parse_args()
 
     try:
-        file_endings = parse_input_path(args.input_path)
+        file_endings, is_paired_end = parse_input_path(args.input_path)
         print(f"Found valid input files with ending: {next(iter(file_endings))}")
+        print(f"Files are {'paired-end' if is_paired_end else 'single-end'}")
         
         read_counts = count_reads(args.input_path, file_endings)
         
