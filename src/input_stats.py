@@ -1,9 +1,42 @@
 import argparse
+import os
+import re
+from typing import List, Tuple
 
-# import os
-# import subprocess
-# import pandas as pd
+def get_input_files(input_path: str) -> List[Tuple[str, str]]:
+    """
+    List files in the input path and extract their file endings.
+    
+    Args:
+        input_path (str): Path to the directory containing FASTA/FASTQ files
+    
+    Returns:
+        List[Tuple[str, str]]: List of tuples containing (file_path, file_ending)
+    
+    Raises:
+        ValueError: If file endings are not identical or not in accepted formats
+    """
+    accepted_endings = {'fasta', 'fastq', 'fq', 'fa', 'fna'}
+    file_list = []
+    endings = set()
 
+    for file in os.listdir(input_path):
+        file_path = os.path.join(input_path, file)
+        if os.path.isfile(file_path):
+            match = re.match(r'^.+\.([^.]+)(\.gz)?$', file)
+            if match:
+                ending = match.group(1).lower()
+                if ending in accepted_endings:
+                    file_list.append((file_path, ending))
+                    endings.add(ending)
+
+    if not file_list:
+        raise ValueError(f"No valid FASTA/FASTQ files found in {input_path}")
+
+    if len(endings) > 1:
+        raise ValueError(f"Multiple file endings found: {', '.join(endings)}. All files should have the same ending.")
+
+    return file_list
 
 def main():
     parser = argparse.ArgumentParser(
@@ -32,7 +65,12 @@ def main():
 
     args = parser.parse_args()
 
-    # TODO: Implement the logic for counting reads and generating the output TSV
+    try:
+        input_files = get_input_files(args.input_path)
+        print(f"Found {len(input_files)} valid input files.")
+        # TODO: Implement the logic for counting reads and generating the output TSV
+    except ValueError as e:
+        print(f"Error: {str(e)}")
 
 
 if __name__ == "__main__":
