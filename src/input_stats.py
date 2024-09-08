@@ -101,16 +101,44 @@ def count_motifs(file_paths: list[str]) -> pd.DataFrame:
     """
     df = pd.DataFrame({"file": file_paths})
 
-    for fasta in file_paths:
-        barcode_command = f"seqkit locate {fasta} -M -m 1 -f {BARCODE_PATH}"
-        primer_command = f"seqkit locate {fasta} -dM -f {PRIMER_PATH}"
+    # Get all pattern names from barcode and primer files
+    barcode_patterns = set(run_command(f"seqkit seq -n {BARCODE_PATH}"))
+    primer_patterns = set(run_command(f"seqkit seq -n {PRIMER_PATH}"))
+    all_patterns = barcode_patterns.union(primer_patterns)
 
-        barcode_lines = run_command(barcode_command)
-        print(barcode_lines)
-        primer_lines = run_command(primer_command)
-        print(primer_lines)
+    # Initialize columns for all patterns with 0
+    for pattern in all_patterns:
+        df[pattern] = 0
+
+    for fasta in file_paths:
+        barcode_command = f"seqkit locate -t {fasta} -M -m 1 -f {BARCODE_PATH}"
+        primer_command = f"seqkit locate -t {fasta} -dM -f {PRIMER_PATH}"
+
+        barcode_counts = parse_seqkit_output(run_command(barcode_command))
+        primer_counts = parse_seqkit_output(run_command(primer_command))
+
+        for pattern, count in {**barcode_counts, **primer_counts}.items():
+            df.loc[df['file'] == fasta, pattern] = count
 
     return df
+
+def parse_seqkit_output(output: list[str]) -> dict[str, int]:
+    """
+    Parse the output of seqkit locate command.
+
+    Args:
+        output (list[str]): List of output lines from seqkit locate
+
+    Returns:
+        dict[str, int]: Dictionary with pattern names as keys and their counts as values
+    """
+    pattern_counts = {}
+    for line in output[1:]:  # Skip the header line
+        columns = line.split('\t')
+        if len(columns) >= 2:
+            pattern = columns[1]
+            pattern_counts[pattern] = pattern_counts.get(pattern, 0) + 1
+    return pattern_counts
 
 
 def run_command(command: str) -> list[str]:
