@@ -136,6 +136,7 @@ def count_motifs(file_paths: list[str]) -> pd.DataFrame:
         counts = []
         for fasta in file_paths:
             command = f"seqkit grep {fasta} -i -s -p {motif_seq} -C -j $(nproc)"
+            print(command)
             try:
                 result = subprocess.run(
                     command, shell=True, check=True, capture_output=True, text=True
