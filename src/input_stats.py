@@ -125,8 +125,8 @@ def count_motifs(file_paths: List[str], verbose: bool = False) -> pd.DataFrame:
         barcode_command = f"seqkit locate {fasta} -FPi -m 0 -f {BARCODE_PATH}"
         primer_command = f"seqkit locate {fasta} -d -f {PRIMER_PATH}"
 
-        barcode_counts = parse_seqkit_output(run_command(barcode_command, verbose))
-        primer_counts = parse_seqkit_output(run_command(primer_command, verbose))
+        barcode_counts = parse_seqkit_output(run_command(barcode_command, verbose), is_barcode=True)
+        primer_counts = parse_seqkit_output(run_command(primer_command, verbose), is_barcode=False)
 
         for pattern, count in {**barcode_counts, **primer_counts}.items():
             df.loc[df["file"] == fasta, pattern] = count
@@ -134,12 +134,13 @@ def count_motifs(file_paths: List[str], verbose: bool = False) -> pd.DataFrame:
     return df
 
 
-def parse_seqkit_output(output: list[str]) -> dict[str, int]:
+def parse_seqkit_output(output: list[str], is_barcode: bool = False) -> dict[str, int]:
     """
     Parse the output of seqkit locate command.
 
     Args:
         output (list[str]): List of output lines from seqkit locate
+        is_barcode (bool): Whether the output is for barcodes (True) or primers (False)
 
     Returns:
         dict[str, int]: Dictionary with pattern names as keys and their counts as values
@@ -149,13 +150,16 @@ def parse_seqkit_output(output: list[str]) -> dict[str, int]:
         columns = line.split("\t")
         if len(columns) >= 5:
             pattern = columns[1]
-            try:
-                mismatch = int(columns[4])
-                if mismatch <= 1:
-                    pattern_counts[pattern] = pattern_counts.get(pattern, 0) + 1
-            except ValueError:
-                # If column 5 is not an integer, skip this line
-                continue
+            if is_barcode:
+                try:
+                    region = int(columns[4])
+                    if region <= 1:
+                        pattern_counts[pattern] = pattern_counts.get(pattern, 0) + 1
+                except ValueError:
+                    # If column 5 is not an integer, skip this line
+                    continue
+            else:
+                pattern_counts[pattern] = pattern_counts.get(pattern, 0) + 1
     return pattern_counts
 
 
