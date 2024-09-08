@@ -136,8 +136,17 @@ def count_motifs(file_paths: list[str]) -> pd.DataFrame:
             command = f"seqkit grep {fasta} -i -s -p {motif_seq} -C -j $(nproc)"
             try:
                 result = subprocess.run(command, shell=True, check=True, capture_output=True, text=True)
-                count = int(result.stdout.strip().split('\n')[0].split('\t')[1])
-            except subprocess.CalledProcessError:
+                output_lines = result.stdout.strip().split('\n')
+                if len(output_lines) > 0 and '\t' in output_lines[0]:
+                    count = int(output_lines[0].split('\t')[1])
+                else:
+                    print(f"Warning: Unexpected output format for motif {motif_name} in file {fasta}")
+                    count = 0
+            except subprocess.CalledProcessError as e:
+                print(f"Error running seqkit grep for motif {motif_name} in file {fasta}: {e}")
+                count = 0
+            except ValueError as e:
+                print(f"Error parsing seqkit grep output for motif {motif_name} in file {fasta}: {e}")
                 count = 0
             counts.append(count)
         df[motif_name] = counts
