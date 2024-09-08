@@ -22,8 +22,7 @@ def parse_input_path(input_path: str) -> set[str]:
     accepted_endings = {"fasta", "fastq", "fq", "fa", "fna"}
     file_list: set[str] = set()
     endings: set[str] = set()
-    paired_files: set[str] = set()
-    unpaired_files: set[str] = set()
+    paired_files: dict[str, list[str]] = {}
 
     for file in os.listdir(input_path):
         file_path = os.path.join(input_path, file)
@@ -33,24 +32,14 @@ def parse_input_path(input_path: str) -> set[str]:
             paired_end_pattern = r"^(.+)([12])\.([^.]+)(\.gz)?$"
             match = re.match(paired_end_pattern, file)
             if match:
-                base_name, _, ending, _ = match.groups()
+                base_name, read_number, ending, _ = match.groups()
                 ending = ending.lower()
                 if ending in accepted_endings:
                     file_list.add(file_path)
                     endings.add(ending)
-                    paired_files.add(base_name)
-            else:
-                # Regex for single-end files: base_name + .extension + optional .gz
-                # Example: sample.fastq or sample.fq.gz
-                single_end_pattern = r"^(.+)\.([^.]+)(\.gz)?$"
-                match = re.match(single_end_pattern, file)
-                if match:
-                    base_name, ending, _ = match.groups()
-                    ending = ending.lower()
-                    if ending in accepted_endings:
-                        file_list.add(file_path)
-                        endings.add(ending)
-                        unpaired_files.add(base_name)
+                    if base_name not in paired_files:
+                        paired_files[base_name] = []
+                    paired_files[base_name].append(read_number)
 
     if not file_list:
         raise ValueError(f"No valid FASTA/FASTQ files found in {input_path}")
@@ -60,8 +49,9 @@ def parse_input_path(input_path: str) -> set[str]:
             f"Multiple file endings found: {', '.join(endings)}. All files should have the same ending."
         )
 
-    if not (len(paired_files) > 0 and len(unpaired_files) == 0):
-        raise ValueError("All files must be paired-end")
+    incomplete_pairs = [base for base, reads in paired_files.items() if len(reads) != 2]
+    if incomplete_pairs:
+        raise ValueError(f"Incomplete paired-end files found for: {', '.join(incomplete_pairs)}")
 
     return endings
 
