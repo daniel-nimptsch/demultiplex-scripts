@@ -143,13 +143,13 @@ def count_motifs(file_paths: list[str]) -> pd.DataFrame:
                 )
                 output_lines = result.stdout.strip().split("\n")
                 print(output_lines)
-                if len(output_lines) == 0:
+                if int(output_lines[0]):
                     count = int(output_lines[0])
                 else:
                     print(
                         f"Warning: Unexpected output format for motif {motif_name} in file {fasta}"
                     )
-                    count = NA
+                    count = pd.NA
             except subprocess.CalledProcessError as e:
                 print(
                     f"Error running seqkit grep for motif {motif_name} in file {fasta}: {e}"
