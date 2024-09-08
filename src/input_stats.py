@@ -3,6 +3,7 @@ import io
 import os
 import re
 import subprocess
+from typing import List
 
 import pandas as pd
 
@@ -65,12 +66,13 @@ def parse_input_path(input_path: str) -> list[str]:
     return file_list
 
 
-def count_reads(file_paths: list[str]) -> pd.DataFrame:
+def count_reads(file_paths: List[str], verbose: bool = False) -> pd.DataFrame:
     """
     Count reads in FASTA/FASTQ files using seqkit stats.
 
     Args:
-        file_paths (list[str]): List of file paths to process
+        file_paths (List[str]): List of file paths to process
+        verbose (bool): If True, print the command and its output
 
     Returns:
         pd.DataFrame: DataFrame containing the file and num_seqs columns from seqkit stats output
@@ -78,10 +80,16 @@ def count_reads(file_paths: list[str]) -> pd.DataFrame:
     file_paths_str = " ".join(file_paths)
     command = f"seqkit stats {file_paths_str} -T --quiet -j 8"
 
+    if verbose:
+        print(f"Executing command: {command}")
+
     try:
         result = subprocess.run(
             command, shell=True, check=True, capture_output=True, text=True
         )
+        if verbose:
+            print("Command output:")
+            print(result.stdout)
         df = pd.read_csv(io.StringIO(result.stdout), sep="\t")
         df = df[["file", "num_seqs"]]
         return df
@@ -89,12 +97,13 @@ def count_reads(file_paths: list[str]) -> pd.DataFrame:
         raise RuntimeError(f"Error running seqkit stats: {e}")
 
 
-def count_motifs(file_paths: list[str]) -> pd.DataFrame:
+def count_motifs(file_paths: List[str], verbose: bool = False) -> pd.DataFrame:
     """
     Count motifs in the input files using seqkit grep.
 
     Args:
-        file_paths (list[str]): List of file paths to process
+        file_paths (List[str]): List of file paths to process
+        verbose (bool): If True, print the commands and their outputs
 
     Returns:
         pd.DataFrame: DataFrame with columns for file paths and motif counts
@@ -102,8 +111,15 @@ def count_motifs(file_paths: list[str]) -> pd.DataFrame:
     df = pd.DataFrame({"file": file_paths})
 
     # Get all pattern names from barcode and primer files
-    barcode_patterns = set(run_command(f"seqkit seq -n {BARCODE_PATH}"))
-    primer_patterns = set(run_command(f"seqkit seq -n {PRIMER_PATH}"))
+    barcode_command = f"seqkit seq -n {BARCODE_PATH}"
+    primer_command = f"seqkit seq -n {PRIMER_PATH}"
+    
+    if verbose:
+        print(f"Executing command: {barcode_command}")
+        print(f"Executing command: {primer_command}")
+    
+    barcode_patterns = set(run_command(barcode_command, verbose))
+    primer_patterns = set(run_command(primer_command, verbose))
     all_patterns = barcode_patterns.union(primer_patterns)
 
     # Initialize columns for all patterns with 0
@@ -114,8 +130,13 @@ def count_motifs(file_paths: list[str]) -> pd.DataFrame:
         barcode_command = f"seqkit locate -t {fasta} -M -m 1 -f {BARCODE_PATH}"
         primer_command = f"seqkit locate -t {fasta} -dM -f {PRIMER_PATH}"
 
-        barcode_counts = parse_seqkit_output(run_command(barcode_command))
-        primer_counts = parse_seqkit_output(run_command(primer_command))
+        if verbose:
+            print(f"Executing command: {barcode_command}")
+        barcode_counts = parse_seqkit_output(run_command(barcode_command, verbose))
+        
+        if verbose:
+            print(f"Executing command: {primer_command}")
+        primer_counts = parse_seqkit_output(run_command(primer_command, verbose))
 
         for pattern, count in {**barcode_counts, **primer_counts}.items():
             df.loc[df['file'] == fasta, pattern] = count
@@ -141,10 +162,13 @@ def parse_seqkit_output(output: list[str]) -> dict[str, int]:
     return pattern_counts
 
 
-def run_command(command: str) -> list[str]:
+def run_command(command: str, verbose: bool = False) -> List[str]:
     result = subprocess.run(
         command, shell=True, check=True, capture_output=True, text=True
     )
+    if verbose:
+        print("Command output:")
+        print(result.stdout)
     return result.stdout.strip().split("\n")
 
 
@@ -163,6 +187,12 @@ def main():
         default=None,
         help="Output TSV file path. If not specified, output will be printed to stdout.",
     )
+    _ = parser.add_argument(
+        "-v",
+        "--verbose",
+        action="store_true",
+        help="Print seqkit commands and their outputs",
+    )
 
     args = parser.parse_args()
 
@@ -172,8 +202,8 @@ def main():
 
     try:
         file_paths = parse_input_path(args.input_path)
-        read_counts = count_reads(file_paths)
-        motif_counts = count_motifs(file_paths)
+        read_counts = count_reads(file_paths, args.verbose)
+        motif_counts = count_motifs(file_paths, args.verbose)
 
         result = pd.merge(read_counts, motif_counts, on="file")
 
