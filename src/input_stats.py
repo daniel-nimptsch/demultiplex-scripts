@@ -93,16 +93,16 @@ def main():
         "input_path", help="Path to the directory containing FASTA/FASTQ files"
     )
     _ = parser.add_argument(
-        "--forward_barcode", help="Path to the forward barcode FASTA file"
+        "forward_barcode", help="Path to the forward barcode FASTA file"
     )
     _ = parser.add_argument(
-        "--reverse_barcode", help="Path to the reverse barcode FASTA file"
+        "reverse_barcode", help="Path to the reverse barcode FASTA file"
     )
     _ = parser.add_argument(
-        "--forward_primer", help="Path to the forward primer FASTA file"
+        "forward_primer", help="Path to the forward primer FASTA file"
     )
     _ = parser.add_argument(
-        "--reverse_primer", help="Path to the reverse primer FASTA file"
+        "reverse_primer", help="Path to the reverse primer FASTA file"
     )
     _ = parser.add_argument(
         "-o",
