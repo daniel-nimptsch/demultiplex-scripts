@@ -1,9 +1,9 @@
 import argparse
+import io
 import os
 import re
 import subprocess
 
-import io
 import pandas as pd
 
 
@@ -82,7 +82,7 @@ def count_reads(input_path: str, file_endings: set[str]) -> pd.DataFrame:
         )
         df = pd.read_csv(io.StringIO(result.stdout), sep="\t")
         # Keep only the 'file' and 'num_seqs' columns
-        df = df[['file', 'num_seqs']]
+        df = df[["file", "num_seqs"]]
         return df
     except subprocess.CalledProcessError as e:
         raise RuntimeError(f"Error running seqkit stats: {e}")
@@ -102,10 +102,10 @@ def count_motifs(df: pd.DataFrame) -> pd.DataFrame:
     # This is where you would implement the actual motif counting
     # For now, we'll just add dummy columns
 
-    df['forward_barcode_count'] = 0
-    df['reverse_barcode_count'] = 0
-    df['forward_primer_count'] = 0
-    df['reverse_primer_count'] = 0
+    df["forward_barcode_count"] = 0
+    df["reverse_barcode_count"] = 0
+    df["forward_primer_count"] = 0
+    df["reverse_primer_count"] = 0
 
     return df
 
@@ -147,6 +147,7 @@ def main():
             motif_counts.to_csv(args.output, sep="\t", index=False)
         else:
             print(motif_counts.to_string(index=False))
+
     except (ValueError, RuntimeError) as e:
         print(f"Error: {str(e)}")
 
