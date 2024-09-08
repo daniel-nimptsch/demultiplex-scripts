@@ -102,18 +102,13 @@ def count_motifs(file_paths: list[str]) -> pd.DataFrame:
     df = pd.DataFrame({"file": file_paths})
 
     for fasta in file_paths:
-        barcode_command = f"seqkit locate {fasta} -M -m 1 -f {BARCODE_PATH} | wc -l"
-        primer_command = f"seqkit locate {fasta} -dM -f {PRIMER_PATH} | wc -l"
+        barcode_command = f"seqkit locate {fasta} -M -m 1 -f {BARCODE_PATH}"
+        primer_command = f"seqkit locate {fasta} -dM -f {PRIMER_PATH}"
 
-        barcode_count = (
-            int(run_command(barcode_command)[0]) - 1
-        )  # Subtract 1 to exclude header
-        primer_count = (
-            int(run_command(primer_command)[0]) - 1
-        )  # Subtract 1 to exclude header
-
-        df.loc[df["file"] == fasta, "barcode_count"] = barcode_count
-        df.loc[df["file"] == fasta, "primer_count"] = primer_count
+        barcode_lines = run_command(barcode_command)
+        print(barcode_lines)
+        primer_lines = run_command(primer_command)
+        print(primer_lines)
 
     return df
 
@@ -143,7 +138,6 @@ def main():
 
     args = parser.parse_args()
 
-    # Set global variables for barcode and primer FASTA paths
     global BARCODE_PATH, PRIMER_PATH
     BARCODE_PATH = args.barcode
     PRIMER_PATH = args.primer
