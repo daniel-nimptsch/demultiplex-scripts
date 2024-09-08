@@ -5,12 +5,9 @@ import re
 import subprocess
 
 import pandas as pd
-from Bio import SeqIO
 
-FORWARD_BARCODE_PATH = ""
-REVERSE_BARCODE_PATH = ""
-FORWARD_PRIMER_PATH = ""
-REVERSE_PRIMER_PATH = ""
+BARCODE_PATH = ""
+PRIMER_PATH = ""
 
 
 def parse_input_path(input_path: str) -> list[str]:
@@ -92,29 +89,6 @@ def count_reads(file_paths: list[str]) -> pd.DataFrame:
         raise RuntimeError(f"Error running seqkit stats: {e}")
 
 
-def get_motifs() -> dict:
-    """
-    Read all barcode and primer FASTA files and store the sequence names and sequences as a dictionary.
-
-    Returns:
-        dict: A dictionary containing sequence names as keys and sequences as values.
-    """
-    motif_files = {
-        FORWARD_BARCODE_PATH,
-        REVERSE_BARCODE_PATH,
-        FORWARD_PRIMER_PATH,
-        REVERSE_PRIMER_PATH,
-    }
-
-    motifs = {}
-    for file_path in motif_files:
-        with open(file_path, "r") as handle:
-            for record in SeqIO.parse(handle, "fasta"):
-                motifs[record.id] = str(record.seq)
-
-    return motifs
-
-
 def count_motifs(file_paths: list[str]) -> pd.DataFrame:
     """
     Count motifs in the input files using seqkit grep.
@@ -125,39 +99,19 @@ def count_motifs(file_paths: list[str]) -> pd.DataFrame:
     Returns:
         pd.DataFrame: DataFrame with columns for file paths and motif counts
     """
-    motifs = get_motifs()
 
     df = pd.DataFrame({"file": file_paths})
 
-    for motif_name, motif_seq in motifs.items():
-        counts = []
-        for fasta in file_paths:
-            command = f"seqkit grep {fasta} -i -C -s -j 8 -p {motif_seq} --quiet"
-            try:
-                result = subprocess.run(
-                    command, shell=True, check=True, capture_output=True, text=True
-                )
-                output_lines = result.stdout.strip().split("\n")
-                print(command)
-                print(output_lines)
-                if int(output_lines[0]):
-                    count = int(output_lines[0])
-                else:
-                    count = pd.NA
-            except subprocess.CalledProcessError as e:
-                print(
-                    f"Error running seqkit grep for motif {motif_name} in file {fasta}: {e}"
-                )
-                count = pd.NA
-            except ValueError as e:
-                print(
-                    f"Error parsing seqkit grep output for motif {motif_name} in file {fasta}: {e}"
-                )
-                count = pd.NA
-            counts.append(count)
-        df[motif_name] = counts
-
-    return df
+    counts = []
+    for fasta in file_paths:
+        command = f"seqkit locate {fasta} -i -C -s -j 8 -r -p {motif_seq} --quiet"
+        try:
+            result = subprocess.run(
+                command, shell=True, check=True, capture_output=True, text=True
+            )
+            output_lines = result.stdout.strip().split("\n")
+            print(command)
+            print(output_lines)
 
 
 def main():
@@ -167,18 +121,8 @@ def main():
     _ = parser.add_argument(
         "input_path", help="Path to the directory containing FASTA/FASTQ files"
     )
-    _ = parser.add_argument(
-        "forward_barcode", help="Path to the forward barcode FASTA file"
-    )
-    _ = parser.add_argument(
-        "reverse_barcode", help="Path to the reverse barcode FASTA file"
-    )
-    _ = parser.add_argument(
-        "forward_primer", help="Path to the forward primer FASTA file"
-    )
-    _ = parser.add_argument(
-        "reverse_primer", help="Path to the reverse primer FASTA file"
-    )
+    _ = parser.add_argument("barcode", help="Path to the barcode FASTA file")
+    _ = parser.add_argument("primer", help="Path to the primer FASTA file")
     _ = parser.add_argument(
         "-o",
         "--output",
@@ -189,19 +133,15 @@ def main():
     args = parser.parse_args()
 
     # Set global variables for barcode and primer FASTA paths
-    global FORWARD_BARCODE_PATH, REVERSE_BARCODE_PATH, FORWARD_PRIMER_PATH, REVERSE_PRIMER_PATH
-    FORWARD_BARCODE_PATH = args.forward_barcode
-    REVERSE_BARCODE_PATH = args.reverse_barcode
-    FORWARD_PRIMER_PATH = args.forward_primer
-    REVERSE_PRIMER_PATH = args.reverse_primer
+    global BARCODE_PATH, PRIMER_PATH
+    BARCODE_PATH = args.barcode
+    PRIMER_PATH = args.primer
 
     try:
         file_paths = parse_input_path(args.input_path)
         read_counts = count_reads(file_paths)
-        motif_counts = count_motifs(file_paths)
+        count_motifs(file_paths)
 
-        # Merge read_counts and motif_counts DataFrames
-        result = pd.merge(read_counts, motif_counts, on="file")
 
         if args.output:
             result.to_csv(args.output, sep="\t", index=False)
