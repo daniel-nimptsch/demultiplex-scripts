@@ -93,6 +93,10 @@ def count_reads(file_paths: List[str], verbose: bool = False) -> pd.DataFrame:
             print(result.stdout)
         df = pd.read_csv(io.StringIO(result.stdout), sep="\t")
         df = df[["file", "num_seqs"]]
+        
+        # Write the output to input_fastq_stats.tsv in the current directory
+        df.to_csv("input_fastq_stats.tsv", sep="\t", index=False)
+        
         return df
     except subprocess.CalledProcessError as e:
         raise RuntimeError(f"Error running seqkit stats: {e}")
