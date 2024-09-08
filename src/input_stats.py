@@ -130,18 +130,17 @@ def count_motifs(file_paths: list[str]) -> pd.DataFrame:
     
     df = pd.DataFrame({"file": file_paths})
 
-    for motif_type, motif_dict in motifs.items():
-        for motif_name, motif_seq in motif_dict.items():
-            counts = []
-            for fasta in file_paths:
-                command = f"seqkit grep {fasta} -i -s -p {motif_seq} -C -j $(nproc)"
-                try:
-                    result = subprocess.run(command, shell=True, check=True, capture_output=True, text=True)
-                    count = int(result.stdout.strip().split('\n')[0].split('\t')[1])
-                except subprocess.CalledProcessError:
-                    count = 0
-                counts.append(count)
-            df[motif_name] = counts
+    for motif_name, motif_seq in motifs.items():
+        counts = []
+        for fasta in file_paths:
+            command = f"seqkit grep {fasta} -i -s -p {motif_seq} -C -j $(nproc)"
+            try:
+                result = subprocess.run(command, shell=True, check=True, capture_output=True, text=True)
+                count = int(result.stdout.strip().split('\n')[0].split('\t')[1])
+            except subprocess.CalledProcessError:
+                count = 0
+            counts.append(count)
+        df[motif_name] = counts
 
     return df
 
