@@ -113,11 +113,11 @@ def count_motifs(file_paths: List[str], verbose: bool = False) -> pd.DataFrame:
     # Get all pattern names from barcode and primer files
     barcode_command = f"seqkit seq -n {BARCODE_PATH}"
     primer_command = f"seqkit seq -n {PRIMER_PATH}"
-    
+
     if verbose:
         print(f"Executing command: {barcode_command}")
         print(f"Executing command: {primer_command}")
-    
+
     barcode_patterns = set(run_command(barcode_command, verbose))
     primer_patterns = set(run_command(primer_command, verbose))
     all_patterns = barcode_patterns.union(primer_patterns)
@@ -133,15 +133,16 @@ def count_motifs(file_paths: List[str], verbose: bool = False) -> pd.DataFrame:
         if verbose:
             print(f"Executing command: {barcode_command}")
         barcode_counts = parse_seqkit_output(run_command(barcode_command, verbose))
-        
+
         if verbose:
             print(f"Executing command: {primer_command}")
         primer_counts = parse_seqkit_output(run_command(primer_command, verbose))
 
         for pattern, count in {**barcode_counts, **primer_counts}.items():
-            df.loc[df['file'] == fasta, pattern] = count
+            df.loc[df["file"] == fasta, pattern] = count
 
     return df
+
 
 def parse_seqkit_output(output: list[str]) -> dict[str, int]:
     """
@@ -155,7 +156,7 @@ def parse_seqkit_output(output: list[str]) -> dict[str, int]:
     """
     pattern_counts = {}
     for line in output[1:]:  # Skip the header line
-        columns = line.split('\t')
+        columns = line.split("\t")
         if len(columns) >= 2:
             pattern = columns[1]
             pattern_counts[pattern] = pattern_counts.get(pattern, 0) + 1
