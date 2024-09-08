@@ -147,9 +147,15 @@ def parse_seqkit_output(output: list[str]) -> dict[str, int]:
     pattern_counts = {}
     for line in output[1:]:  # Skip the header line
         columns = line.split("\t")
-        if len(columns) >= 2:
+        if len(columns) >= 5:
             pattern = columns[1]
-            pattern_counts[pattern] = pattern_counts.get(pattern, 0) + 1
+            try:
+                mismatch = int(columns[4])
+                if mismatch <= 1:
+                    pattern_counts[pattern] = pattern_counts.get(pattern, 0) + 1
+            except ValueError:
+                # If column 5 is not an integer, skip this line
+                continue
     return pattern_counts
 
 
