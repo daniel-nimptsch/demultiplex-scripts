@@ -3,6 +3,7 @@ import os
 import re
 import subprocess
 
+import io
 import pandas as pd
 
 
@@ -79,7 +80,7 @@ def count_reads(input_path: str, file_endings: set[str]) -> pd.DataFrame:
         result = subprocess.run(
             command, shell=True, check=True, capture_output=True, text=True
         )
-        df = pd.read_csv(pd.compat.StringIO(result.stdout), sep="\t")
+        df = pd.read_csv(io.StringIO(result.stdout), sep="\t")
         return df
     except subprocess.CalledProcessError as e:
         raise RuntimeError(f"Error running seqkit stats: {e}")
