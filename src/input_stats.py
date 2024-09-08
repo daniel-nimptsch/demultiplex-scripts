@@ -89,7 +89,7 @@ def count_reads(file_paths: list[str]) -> pd.DataFrame:
         raise RuntimeError(f"Error running seqkit stats: {e}")
 
 
-def count_motifs(file_paths: list[str]) -> pd.DataFrame:
+def count_motifs(file_paths: list[str]):
     """
     Count motifs in the input files using seqkit grep.
 
@@ -104,14 +104,21 @@ def count_motifs(file_paths: list[str]) -> pd.DataFrame:
 
     counts = []
     for fasta in file_paths:
-        command = f"seqkit locate {fasta} -dIM -f {BARCODE_PATH}"
+        command = f"seqkit locate {fasta} -M -m 1 -f {BARCODE_PATH}"
         try:
-            result = subprocess.run(
-                command, shell=True, check=True, capture_output=True, text=True
-            )
-            output_lines = result.stdout.strip().split("\n")
-            print(command)
-            print(output_lines)
+            run_command(command)
+        command = f"seqkit locate {fasta} -dM -f {PRIMER_PATH}"
+        try:
+            run_command(command)
+
+
+def run_command(command: str) -> list[str]:
+    result = subprocess.run(
+        command, shell=True, check=True, capture_output=True, text=True
+    )
+    output_lines = result.stdout.strip().split("\n")
+    print(command)
+    print(output_lines)
 
 
 def main():
