@@ -73,7 +73,7 @@ def count_reads(input_path: str, file_endings: set[str]) -> pd.DataFrame:
         pd.DataFrame: DataFrame containing the seqkit stats output
     """
     ending = next(iter(file_endings))
-    command = f"seqkit stats {input_path}/*{1,2}*.{ending} -T --quiet"
+    command = f"seqkit stats {input_path}/*{{1,2}}*.{ending} -T --quiet"
 
     try:
         result = subprocess.run(
