@@ -32,7 +32,7 @@ def parse_input_path(input_path: str) -> set[str]:
         if os.path.isfile(file_path):
             match = re.match(r"^(.+)([12])\.([^.]+)(\.gz)?$", file)
             if match:
-                base_name, pair_num, ending, _ = match.groups()
+                base_name, _, ending, _ = match.groups()
                 ending = ending.lower()
                 if ending in accepted_endings:
                     file_list.add(file_path)
