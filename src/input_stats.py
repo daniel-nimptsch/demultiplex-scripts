@@ -99,21 +99,20 @@ def get_motifs() -> dict:
     Read all barcode and primer FASTA files and store the sequence names and sequences as a dictionary.
 
     Returns:
-        dict: A dictionary containing motif types as keys and dictionaries of sequence names and sequences as values.
+        dict: A dictionary containing sequence names as keys and sequences as values.
     """
     motif_files = {
-        "forward_barcode": FORWARD_BARCODE_PATH,
-        "reverse_barcode": REVERSE_BARCODE_PATH,
-        "forward_primer": FORWARD_PRIMER_PATH,
-        "reverse_primer": REVERSE_PRIMER_PATH
+        FORWARD_BARCODE_PATH,
+        REVERSE_BARCODE_PATH,
+        FORWARD_PRIMER_PATH,
+        REVERSE_PRIMER_PATH
     }
 
     motifs = {}
-    for motif_type, file_path in motif_files.items():
-        motifs[motif_type] = {}
+    for file_path in motif_files:
         with open(file_path, "r") as handle:
             for record in SeqIO.parse(handle, "fasta"):
-                motifs[motif_type][record.id] = str(record.seq)
+                motifs[record.id] = str(record.seq)
 
     return motifs
 
