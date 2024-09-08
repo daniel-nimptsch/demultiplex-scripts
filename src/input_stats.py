@@ -1,29 +1,30 @@
 import argparse
 import os
 import re
-from typing import List, Tuple
+from typing import list, tuple
 
-def get_input_files(input_path: str) -> List[Tuple[str, str]]:
+
+def get_input_files(input_path: str) -> list[tuple[str, str]]:
     """
     List files in the input path and extract their file endings.
-    
+
     Args:
         input_path (str): Path to the directory containing FASTA/FASTQ files
-    
+
     Returns:
         List[Tuple[str, str]]: List of tuples containing (file_path, file_ending)
-    
+
     Raises:
         ValueError: If file endings are not identical or not in accepted formats
     """
-    accepted_endings = {'fasta', 'fastq', 'fq', 'fa', 'fna'}
+    accepted_endings = {"fasta", "fastq", "fq", "fa", "fna"}
     file_list = []
     endings = set()
 
     for file in os.listdir(input_path):
         file_path = os.path.join(input_path, file)
         if os.path.isfile(file_path):
-            match = re.match(r'^.+\.([^.]+)(\.gz)?$', file)
+            match = re.match(r"^.+\.([^.]+)(\.gz)?$", file)
             if match:
                 ending = match.group(1).lower()
                 if ending in accepted_endings:
@@ -34,9 +35,12 @@ def get_input_files(input_path: str) -> List[Tuple[str, str]]:
         raise ValueError(f"No valid FASTA/FASTQ files found in {input_path}")
 
     if len(endings) > 1:
-        raise ValueError(f"Multiple file endings found: {', '.join(endings)}. All files should have the same ending.")
+        raise ValueError(
+            f"Multiple file endings found: {', '.join(endings)}. All files should have the same ending."
+        )
 
     return file_list
+
 
 def main():
     parser = argparse.ArgumentParser(
@@ -58,7 +62,8 @@ def main():
         "--reverse_primer", help="Path to the reverse primer FASTA file"
     )
     _ = parser.add_argument(
-        "-o", "--output",
+        "-o",
+        "--output",
         default=None,
         help="Output TSV file path. If not specified, output will be printed to stdout.",
     )
