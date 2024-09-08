@@ -32,11 +32,14 @@ def parse_input_path(input_path: str) -> set[str]:
             paired_end_pattern = r"^(.+)([12])\.([^.]+)(\.gz)?$"
             match = re.match(paired_end_pattern, file)
             if match:
-                base_name, read_number, ending, _ = match.groups()
+                base_name, read_number, ending, gz = match.groups()
                 ending = ending.lower()
                 if ending in accepted_endings:
                     file_list.add(file_path)
-                    endings.add(ending)
+                    if gz:
+                        endings.add(f"{ending}.gz")
+                    else:
+                        endings.add(ending)
                     if base_name not in paired_files:
                         paired_files[base_name] = []
                     paired_files[base_name].append(read_number)
