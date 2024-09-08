@@ -1,7 +1,6 @@
 import argparse
 import os
 import re
-from typing import list, tuple
 
 
 def parse_input_path(input_path: str) -> set[str]:
