@@ -1,9 +1,12 @@
 import io
+import argparse
+import multiprocessing
 from pathlib import Path
 
 import pandas as pd
 
 from command_utils import run_command
+from file_utils import parse_input_path, write_output
 
 
 def count_reads(file_paths: list[Path], cpu_count: int) -> pd.DataFrame:
