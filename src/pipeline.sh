@@ -54,6 +54,10 @@ while [[ $# -gt 0 ]]; do
         NOVOGENE_SAMPLESHEET=true
         shift
         ;;
+    -c | --combinatorial)
+        COMBINATORIAL=true
+        shift
+        ;;
     *)
         if [ -z "$INPUT_SAMPLESHEET" ]; then
             INPUT_SAMPLESHEET="$1"
@@ -129,15 +133,20 @@ python demultiplex-scripts/src/motif_counts.py \
     >"$INPUT_DIR/motif_counts.tsv"
 
 echo "(6/10) Demultiplexing"
-python demultiplex-scripts/src/demultiplex.py \
-    "$FASTQ1" \
-    "$FASTQ2" \
-    "$DEMUX_PATH/work/barcodes_fwd.fasta" \
-    "$DEMUX_PATH/work/barcodes_rev.fasta" \
-    -o "$DEMUX_PATH/work" \
-    -c \
-    -e "${ERROR_RATE}" \
-    --min-overlap "${MIN_OVERLAP}"
+DEMUX_COMMAND="python demultiplex-scripts/src/demultiplex.py \
+    \"$FASTQ1\" \
+    \"$FASTQ2\" \
+    \"$DEMUX_PATH/work/barcodes_fwd.fasta\" \
+    \"$DEMUX_PATH/work/barcodes_rev.fasta\" \
+    -o \"$DEMUX_PATH/work\" \
+    -e \"${ERROR_RATE}\" \
+    --min-overlap \"${MIN_OVERLAP}\""
+
+if [ "$COMBINATORIAL" = true ]; then
+    DEMUX_COMMAND+=" -c"
+fi
+
+eval $DEMUX_COMMAND
 
 echo "(7/10) Copying patterns"
 python demultiplex-scripts/src/patterns_copy.py -o "$DEMUX_PATH/demux_renamed" <"$DEMUX_PATH/work/patterns.txt"
