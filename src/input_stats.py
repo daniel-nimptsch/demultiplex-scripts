@@ -25,13 +25,13 @@ config: Config
 
 def count_reads(file_paths: list[Path]) -> pd.DataFrame:
     """
-    Count reads and get average sequence length in FASTA/FASTQ files using seqkit stats.
+    Count reads in FASTA/FASTQ files using seqkit stats.
 
     Args:
         file_paths (list[str]): List of file paths to process
 
     Returns:
-        pd.DataFrame: DataFrame containing the file, num_seqs, and avg_len columns from seqkit stats output
+        pd.DataFrame: DataFrame containing the file and num_seqs columns from seqkit stats output
     """
     file_paths_str = " ".join(str(path) for path in file_paths)
     command = f"seqkit stats {file_paths_str} -T --quiet -j {config.cpu_count}"
@@ -40,7 +40,7 @@ def count_reads(file_paths: list[Path]) -> pd.DataFrame:
     write_output(output, "seqkit_stats_raw.tsv")
 
     df = pd.read_csv(io.StringIO(output), sep="\t")
-    df = df[["file", "num_seqs", "avg_len"]]
+    df = df[["file", "num_seqs"]]
     return df
 
 
