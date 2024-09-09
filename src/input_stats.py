@@ -1,5 +1,4 @@
 import argparse
-import io
 import multiprocessing
 import re
 import subprocess
@@ -194,7 +193,7 @@ def parse_seqkit_locate(
     else:
         search_dict = {seq.lstrip("^"): name for name, seq in patterns.items()}
 
-    for line in output[1:]:  
+    for line in output[1:]:
         try:
             _, pattern, *_ = line.split("\t")
             pattern = pattern.lstrip("^") if not use_pattern_names else pattern
@@ -256,7 +255,8 @@ def main() -> None:
         help="Print seqkit commands and their outputs",
     )
     _ = parser.add_argument(
-        "-w", "--write-to-file",
+        "-w",
+        "--write-to-file",
         action="store_true",
         default=False,
         help="Write result to a TSV file. Default is False.",
@@ -269,7 +269,7 @@ def main() -> None:
 
     global config
     config = Config(
-        barcode_path= args.barcode,
+        barcode_path=args.barcode,
         primer_path=args.primer,
         verbose=args.verbose,
         output_path=output_path,
@@ -283,7 +283,9 @@ def main() -> None:
         result = pd.merge(read_counts, motif_counts, on="file")
 
         if config.write_to_file:
-            result.to_csv(config.output_path / "motif_counts.tsv", sep="\t", index=False)
+            result.to_csv(
+                config.output_path / "motif_counts.tsv", sep="\t", index=False
+            )
             print(f"Results written to {config.output_path / 'motif_counts.tsv'}")
         else:
             print(result.to_string(index=False))
