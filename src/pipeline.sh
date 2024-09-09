@@ -19,10 +19,11 @@ display_help() {
     echo "  -e, --error-rate <rate> Maximum expected error rate (default: 0.14)"
     echo "  --min-overlap <int>    Minimum overlap length for adapter matching (default: 3)"
     echo "  --novogene-samplesheet Use this flag if the input is a Novogene samplesheet"
+    echo "  -c, --combinatorial    Use combinatorial dual indexes for demultiplexing"
     echo "  -h, --help             Display this help message and exit"
     echo
     echo "Example:"
-    echo "  $0 input_samplesheet.tsv R1.fastq.gz R2.fastq.gz -o output_dir -e 0.1 --min-overlap 5"
+    echo "  $0 input_samplesheet.tsv R1.fastq.gz R2.fastq.gz -o output_dir -e 0.1 --min-overlap 5 -c"
 }
 
 # Set default values
@@ -30,6 +31,7 @@ DEMUX_PATH="./data/demultiplex"
 ERROR_RATE=0.14
 MIN_OVERLAP=3
 NOVOGENE_SAMPLESHEET=false
+COMBINATORIAL=false
 
 # Parse command-line arguments
 while [[ $# -gt 0 ]]; do
