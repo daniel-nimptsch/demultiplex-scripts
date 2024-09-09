@@ -102,11 +102,17 @@ def count_reads(file_paths: list[str]) -> pd.DataFrame:
 
 
 def get_patterns() -> tuple[dict[str, str], dict[str, str]]:
-    barcode_command = f"seqkit seq -n -s {config.barcode_path} -j {config.cpu_count}"
-    primer_command = f"seqkit seq -n -s {config.primer_path} -j {config.cpu_count}"
+    barcode_command = f"seqkit seq -n {config.barcode_path} -j {config.cpu_count}"
+    primer_command = f"seqkit seq -n {config.primer_path} -j {config.cpu_count}"
 
-    barcode_output = run_command(barcode_command).splitlines()
-    primer_output = run_command(primer_command).splitlines()
+    barcode_names = run_command(barcode_command).splitlines()
+    primer_names = run_command(primer_command).splitlines()
+
+    barcode_command = f"seqkit seq -s {config.barcode_path} -j {config.cpu_count}"
+    primer_command = f"seqkit seq -s {config.primer_path} -j {config.cpu_count}"
+
+    barcode_seqs = run_command(barcode_command).splitlines()
+    primer_seqs = run_command(primer_command).splitlines()
 
     barcode_patterns = {line.split()[0]: line.split()[1] for line in barcode_output}
     primer_patterns = {line.split()[0]: line.split()[1] for line in primer_output}
@@ -139,7 +145,7 @@ def count_motifs(file_paths: list[str]) -> pd.DataFrame:
         # -d allow degenerate bases, -i case insensitive
         barcode_patterns_str = ",".join(f"^{seq}" for seq in barcode_patterns.values())
         primer_patterns_str = ",".join(f"^{seq}" for seq in primer_patterns.values())
-        
+
         barcode_command = (
             f"seqkit locate {fasta} -di -p {barcode_patterns_str} -j {config.cpu_count}"
         )
@@ -156,8 +162,12 @@ def count_motifs(file_paths: list[str]) -> pd.DataFrame:
         with open("primer_locate.tsv", "w") as f:
             _ = f.write(primer_output)
 
-        barcode_counts = parse_seqkit_locate(barcode_output.strip().split("\n"), barcode_patterns)
-        primer_counts = parse_seqkit_locate(primer_output.strip().split("\n"), primer_patterns)
+        barcode_counts = parse_seqkit_locate(
+            barcode_output.strip().split("\n"), barcode_patterns
+        )
+        primer_counts = parse_seqkit_locate(
+            primer_output.strip().split("\n"), primer_patterns
+        )
 
         for pattern, count in {**barcode_counts, **primer_counts}.items():
             df.loc[df["file"] == fasta, pattern] = count
@@ -178,7 +188,7 @@ def parse_seqkit_locate(output: list[str], patterns: dict[str, str]) -> dict[str
     """
     pattern_counts = {name: 0 for name in patterns.keys()}
     seq_to_name = {seq: name for name, seq in patterns.items()}
-    
+
     for line in output[1:]:
         columns = line.split("\t")
         if len(columns) >= 5:
