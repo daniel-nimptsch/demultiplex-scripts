@@ -6,6 +6,8 @@ from pathlib import Path
 
 import pandas as pd
 
+from .file_utils import parse_input_path
+
 
 @dataclass
 class Config:
@@ -19,8 +21,6 @@ class Config:
 
 config: Config
 
-
-from .file_utils import parse_input_path
 
 def count_reads(file_paths: list[Path]) -> pd.DataFrame:
     """
@@ -72,17 +72,22 @@ def empty_pattern_df(patterns: dict[str, str], file_paths: list[Path]) -> pd.Dat
         df[pattern] = 0
     return df
 
+
 def run_seqkit_locate(fasta: Path, patterns: dict[str, str], is_primer: bool) -> str:
     if is_primer:
-        command = f"seqkit locate {fasta} -di -f {config.primer_path} -j {config.cpu_count}"
+        command = (
+            f"seqkit locate {fasta} -di -f {config.primer_path} -j {config.cpu_count}"
+        )
     else:
         patterns_str = ",".join(f"^{seq}" for seq in patterns.values())
         command = f"seqkit locate {fasta} -di -p {patterns_str} -j {config.cpu_count}"
     return run_command(command)
 
+
 def write_output(output: str, filename: str) -> None:
     with open(config.output_path / filename, "w") as f:
         _ = f.write(output)
+
 
 def count_motifs(file_paths: list[Path]) -> pd.DataFrame:
     """
