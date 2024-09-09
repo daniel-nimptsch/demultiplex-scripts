@@ -101,45 +101,50 @@ def count_reads(file_paths: list[str]) -> pd.DataFrame:
     return df
 
 
-def get_patterns() -> tuple[set[str], set[str]]:
-    barcode_command = f"seqkit seq -n {config.barcode_path} -j {config.cpu_count}"
-    primer_command = f"seqkit seq -n {config.primer_path} -j {config.cpu_count}"
+def get_patterns() -> tuple[dict[str, str], dict[str, str]]:
+    barcode_command = f"seqkit seq -n -s {config.barcode_path} -j {config.cpu_count}"
+    primer_command = f"seqkit seq -n -s {config.primer_path} -j {config.cpu_count}"
 
-    barcode_patterns = set(run_command(barcode_command).splitlines())
-    primer_patterns = set(run_command(primer_command).splitlines())
+    barcode_output = run_command(barcode_command).splitlines()
+    primer_output = run_command(primer_command).splitlines()
+
+    barcode_patterns = {line.split()[0]: line.split()[1] for line in barcode_output}
+    primer_patterns = {line.split()[0]: line.split()[1] for line in primer_output}
     return barcode_patterns, primer_patterns
 
 
-def empty_pattern_df(patterns: set[str], file_paths: list[str]) -> pd.DataFrame:
+def empty_pattern_df(patterns: dict[str, str], file_paths: list[str]) -> pd.DataFrame:
     df = pd.DataFrame({"file": file_paths})
-    for pattern in patterns:
+    for pattern in patterns.keys():
         df[pattern] = 0
     return df
 
 
 def count_motifs(file_paths: list[str]) -> pd.DataFrame:
     """
-    Count motifs in the input files using seqkit fish for adapterd and locate for primers.
+    Count motifs in the input files using seqkit locate for both barcodes and primers.
 
     Args:
         file_paths (list[str]): List of file paths to process
 
     Returns:
-        pd.DataFrame: DataFrame with rows for file paths and columns for and motif counts
+        pd.DataFrame: DataFrame with rows for file paths and columns for motif counts
     """
 
     barcode_patterns, primer_patterns = get_patterns()
-    all_patterns = barcode_patterns.union(primer_patterns)
+    all_patterns = {**barcode_patterns, **primer_patterns}
     df = empty_pattern_df(all_patterns, file_paths)
 
     for fasta in file_paths:
         # -d allow degenerate bases, -i case insensitive
-        barcode_patterns_str = ",".join(f"^{pattern}" for pattern in barcode_patterns)
+        barcode_patterns_str = ",".join(f"^{seq}" for seq in barcode_patterns.values())
+        primer_patterns_str = ",".join(f"^{seq}" for seq in primer_patterns.values())
+        
         barcode_command = (
             f"seqkit locate {fasta} -di -p {barcode_patterns_str} -j {config.cpu_count}"
         )
         primer_command = (
-            f"seqkit locate {fasta} -di -f {config.primer_path} -j {config.cpu_count}"
+            f"seqkit locate {fasta} -di -p {primer_patterns_str} -j {config.cpu_count}"
         )
 
         barcode_output = run_command(barcode_command)
@@ -147,12 +152,12 @@ def count_motifs(file_paths: list[str]) -> pd.DataFrame:
 
         # Write raw outputs to files
         with open("barcode_locate.tsv", "w") as f:
-            _ = f.write("\n".join(barcode_output))
+            _ = f.write(barcode_output)
         with open("primer_locate.tsv", "w") as f:
-            _ = f.write("\n".join(primer_output))
+            _ = f.write(primer_output)
 
-        barcode_counts = parse_seqkit_locate(barcode_output.strip().split("\n"))
-        primer_counts = parse_seqkit_locate(primer_output.strip().split("\n"))
+        barcode_counts = parse_seqkit_locate(barcode_output.strip().split("\n"), barcode_patterns)
+        primer_counts = parse_seqkit_locate(primer_output.strip().split("\n"), primer_patterns)
 
         for pattern, count in {**barcode_counts, **primer_counts}.items():
             df.loc[df["file"] == fasta, pattern] = count
@@ -160,22 +165,27 @@ def count_motifs(file_paths: list[str]) -> pd.DataFrame:
     return df
 
 
-def parse_seqkit_locate(output: list[str]) -> dict[str, int]:
+def parse_seqkit_locate(output: list[str], patterns: dict[str, str]) -> dict[str, int]:
     """
     Parse the output of seqkit locate command.
 
     Args:
         output (list[str]): List of output lines from seqkit locate
+        patterns (dict[str, str]): Dictionary of pattern names and their sequences
 
     Returns:
         dict[str, int]: Dictionary with pattern names as keys and their counts as values
     """
-    pattern_counts = {}
+    pattern_counts = {name: 0 for name in patterns.keys()}
+    seq_to_name = {seq: name for name, seq in patterns.items()}
+    
     for line in output[1:]:
         columns = line.split("\t")
         if len(columns) >= 5:
-            pattern = columns[1]
-            pattern_counts[pattern] = pattern_counts.get(pattern, 0) + 1
+            seq = columns[1]
+            if seq in seq_to_name:
+                pattern_name = seq_to_name[seq]
+                pattern_counts[pattern_name] += 1
     return pattern_counts
 
 
