@@ -47,6 +47,22 @@ if [ -z "$INPUT_SAMPLESHEET" ] || [ -z "$FASTQ1" ] || [ -z "$FASTQ2" ]; then
     exit 1
 fi
 
+# Check if the required files exist
+if [ ! -f "$INPUT_SAMPLESHEET" ]; then
+    echo "Error: Input samplesheet file '$INPUT_SAMPLESHEET' does not exist."
+    exit 1
+fi
+
+if [ ! -f "$FASTQ1" ]; then
+    echo "Error: FASTQ1 file '$FASTQ1' does not exist."
+    exit 1
+fi
+
+if [ ! -f "$FASTQ2" ]; then
+    echo "Error: FASTQ2 file '$FASTQ2' does not exist."
+    exit 1
+fi
+
 # Demultiplex pipeline start:
 INPUT_DIR=$(dirname "$FASTQ1")
 
