@@ -1,6 +1,5 @@
 import argparse
 import multiprocessing
-import sys
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -21,22 +20,6 @@ class Config:
 
 
 config: Config
-
-
-def read_input_table(file_path: Path | None) -> pd.DataFrame:
-    """
-    Read the input table from a file or stdin.
-
-    Args:
-        file_path (Path | None): Path to the input file, or None if reading from stdin
-
-    Returns:
-        pd.DataFrame: DataFrame containing the input table
-    """
-    if file_path is None:
-        return pd.read_csv(sys.stdin, sep="\t")
-    else:
-        return pd.read_csv(file_path, sep="\t")
 
 
 def get_patterns() -> tuple[dict[str, str], dict[str, str]]:
@@ -165,10 +148,9 @@ def main() -> None:
         description="Count subset of reads with specific adapter or primer sequences in input FASTA/FASTQ files."
     )
     _ = parser.add_argument(
-        "input_table",
-        nargs="?",
+        "input_path",
         type=Path,
-        help="Path to the input table file with fastq read counts. If not provided, reads from stdin.",
+        help="Path to the input path with fastq files.",
     )
     _ = parser.add_argument("barcode", help="Path to the barcode FASTA file", type=Path)
     _ = parser.add_argument("primer", help="Path to the primer FASTA file", type=Path)
@@ -207,18 +189,16 @@ def main() -> None:
     )
 
     try:
-        read_counts = read_input_table(args.input_table)
-        file_paths = [Path(file) for file in read_counts["file"]]
+        file_paths = parse_input_path(args.input_path)
         motif_counts = count_motifs(file_paths)
-        result = pd.merge(read_counts, motif_counts, on="file")
 
         if config.write_to_file:
-            result.to_csv(
+            motif_counts.to_csv(
                 config.output_path / "motif_counts.tsv", sep="\t", index=False
             )
             print(f"Results written to {config.output_path / 'motif_counts.tsv'}")
         else:
-            print(result.to_string(index=False))
+            print(motif_counts.to_string(index=False))
 
     except (ValueError, RuntimeError) as e:
         print(f"Error: {str(e)}")
