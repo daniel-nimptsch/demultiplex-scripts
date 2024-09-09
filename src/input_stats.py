@@ -164,10 +164,10 @@ def count_motifs(file_paths: list[str]) -> pd.DataFrame:
             _ = f.write(primer_output)
 
         barcode_counts = parse_seqkit_locate(
-            barcode_output.strip().split("\n"), barcode_patterns
+            barcode_output.strip().split("\n"), barcode_patterns, use_pattern_names=False
         )
         primer_counts = parse_seqkit_locate(
-            primer_output.strip().split("\n"), primer_patterns
+            primer_output.strip().split("\n"), primer_patterns, use_pattern_names=True
         )
 
         for pattern, count in {**barcode_counts, **primer_counts}.items():
@@ -176,27 +176,37 @@ def count_motifs(file_paths: list[str]) -> pd.DataFrame:
     return df
 
 
-def parse_seqkit_locate(output: list[str], patterns: dict[str, str]) -> dict[str, int]:
+def parse_seqkit_locate(output: list[str], patterns: dict[str, str], use_pattern_names: bool = False) -> dict[str, int]:
     """
     Parse the output of seqkit locate command.
 
     Args:
         output (list[str]): List of output lines from seqkit locate
         patterns (dict[str, str]): Dictionary of pattern names and their sequences
+        use_pattern_names (bool): If True, search for pattern names instead of sequences (for -f flag)
 
     Returns:
         dict[str, int]: Dictionary with pattern names as keys and their counts as values
     """
-    pattern_counts = {name: 0 for name in patterns.keys()}
-    seq_to_name = {seq: name for name, seq in patterns.items()}
+    pattern_counts = {name: 0 for name in patterns}
+    
+    if use_pattern_names:
+        # When using -f flag, we search for pattern names
+        search_dict = {name: name for name in patterns}
+    else:
+        # When using -p flag, we search for pattern sequences
+        search_dict = {seq: name for name, seq in patterns.items()}
 
-    for line in output[1:]:
-        columns = line.split("\t")
-        if len(columns) >= 5:
-            seq = columns[1]
-            if seq in seq_to_name:
-                pattern_name = seq_to_name[seq]
+    for line in output[1:]:  # Skip the header line
+        try:
+            _, pattern, *_ = line.split("\t")
+            if pattern in search_dict:
+                pattern_name = search_dict[pattern]
                 pattern_counts[pattern_name] += 1
+        except ValueError:
+            # Skip lines that don't have the expected number of columns
+            continue
+
     return pattern_counts
 
 
