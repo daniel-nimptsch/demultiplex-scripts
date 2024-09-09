@@ -33,15 +33,15 @@ def get_patterns() -> tuple[dict[str, str], dict[str, str]]:
             2. Primer patterns (key: name, value: sequence)
     """
 
-    def get_pattern_dict(file_path: Path, cpu_count: int) -> dict[str, str]:
+    def get_pattern_dict(file_path: Path, cpu_count: int, verbose: bool) -> dict[str, str]:
         name_command = f"seqkit seq -n {file_path} -j {cpu_count}"
         seq_command = f"seqkit seq -s {file_path} -j {cpu_count}"
-        names = run_command(name_command, config.verbose).splitlines()
-        seqs = run_command(seq_command, config.verbose).splitlines()
+        names = run_command(name_command, verbose).splitlines()
+        seqs = run_command(seq_command, verbose).splitlines()
         return dict(zip(names, seqs))
 
-    barcode_patterns = get_pattern_dict(config.barcode_path, config.cpu_count)
-    primer_patterns = get_pattern_dict(config.primer_path, config.cpu_count)
+    barcode_patterns = get_pattern_dict(config.barcode_path, config.cpu_count, config.verbose)
+    primer_patterns = get_pattern_dict(config.primer_path, config.cpu_count, config.verbose)
     return barcode_patterns, primer_patterns
 
 
