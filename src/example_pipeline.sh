@@ -6,48 +6,45 @@ ERROR_RATE=0.14
 MIN_OVERLAP=3
 NOVOGENE_SAMPLESHEET=false
 
-# Parse command-line arguments
 while [[ $# -gt 0 ]]; do
     case $1 in
-        -o|--output)
-            DEMUX_PATH="$2"
-            shift 2
-            ;;
-        -e|--error-rate)
-            ERROR_RATE="$2"
-            shift 2
-            ;;
-        --min-overlap)
-            MIN_OVERLAP="$2"
-            shift 2
-            ;;
-        --novogene-samplesheet)
-            NOVOGENE_SAMPLESHEET=true
-            shift
-            ;;
-        *)
-            if [ -z "$INPUT_SAMPLESHEET" ]; then
-                INPUT_SAMPLESHEET="$1"
-            elif [ -z "$FASTQ1" ]; then
-                FASTQ1="$1"
-            elif [ -z "$FASTQ2" ]; then
-                FASTQ2="$1"
-            else
-                echo "Error: Unexpected argument '$1'"
-                exit 1
-            fi
-            shift
-            ;;
+    -o | --output)
+        DEMUX_PATH="$2"
+        shift 2
+        ;;
+    -e | --error-rate)
+        ERROR_RATE="$2"
+        shift 2
+        ;;
+    --min-overlap)
+        MIN_OVERLAP="$2"
+        shift 2
+        ;;
+    --novogene-samplesheet)
+        NOVOGENE_SAMPLESHEET=true
+        shift
+        ;;
+    *)
+        if [ -z "$INPUT_SAMPLESHEET" ]; then
+            INPUT_SAMPLESHEET="$1"
+        elif [ -z "$FASTQ1" ]; then
+            FASTQ1="$1"
+        elif [ -z "$FASTQ2" ]; then
+            FASTQ2="$1"
+        else
+            echo "Error: Unexpected argument '$1'"
+            exit 1
+        fi
+        shift
+        ;;
     esac
 done
 
-# Check for required arguments
 if [ -z "$INPUT_SAMPLESHEET" ] || [ -z "$FASTQ1" ] || [ -z "$FASTQ2" ]; then
     echo "Usage: $0 <input_samplesheet> <fastq1> <fastq2> [-o <output_dir>] [-e <error_rate>] [--min-overlap <min_overlap>] [--novogene-samplesheet]"
     exit 1
 fi
 
-# Check if the required files exist
 if [ ! -f "$INPUT_SAMPLESHEET" ]; then
     echo "Error: Input samplesheet file '$INPUT_SAMPLESHEET' does not exist."
     exit 1
@@ -63,7 +60,6 @@ if [ ! -f "$FASTQ2" ]; then
     exit 1
 fi
 
-# Demultiplex pipeline start:
 INPUT_DIR=$(dirname "$FASTQ1")
 
 echo "(1/10) Counting reads in multiplex data"
