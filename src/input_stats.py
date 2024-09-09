@@ -9,6 +9,7 @@ import pandas as pd
 
 BARCODE_PATH = ""
 PRIMER_PATH = ""
+VERBOSE = ""
 CPU_COUNT = multiprocessing.cpu_count()
 
 
@@ -67,13 +68,12 @@ def parse_input_path(input_path: str) -> list[str]:
     return file_list
 
 
-def count_reads(file_paths: list[str], verbose: bool = False) -> pd.DataFrame:
+def count_reads(file_paths: list[str]) -> pd.DataFrame:
     """
     Count reads and get average sequence length in FASTA/FASTQ files using seqkit stats.
 
     Args:
         file_paths (list[str]): List of file paths to process
-        verbose (bool): If True, print the command and its output
 
     Returns:
         pd.DataFrame: DataFrame containing the file, num_seqs, and avg_len columns from seqkit stats output
@@ -81,62 +81,56 @@ def count_reads(file_paths: list[str], verbose: bool = False) -> pd.DataFrame:
     file_paths_str = " ".join(file_paths)
     command = f"seqkit stats {file_paths_str} -T --quiet -j {CPU_COUNT}"
 
-    if verbose:
-        print(command)
+    output = run_command(command)
 
-    try:
-        result = subprocess.run(
-            command, shell=True, check=True, capture_output=True, text=True
-        )
-        if verbose:
-            print(result.stdout)
+    # Write the raw result to a file
+    with open("seqkit_stats_raw.tsv", "w") as f:
+        _ = f.write(output)
 
-        # Write the raw result to a file
-        with open("seqkit_stats_raw.tsv", "w") as f:
-            _ = f.write(result.stdout)
+    df = pd.read_csv(io.StringIO(output), sep="\t")
+    df = df[["file", "num_seqs", "avg_len"]]
 
-        df = pd.read_csv(io.StringIO(result.stdout), sep="\t")
-        df = df[["file", "num_seqs", "avg_len"]]
-
-        return df
-    except subprocess.CalledProcessError as e:
-        raise RuntimeError(f"Error running seqkit stats: {e}")
+    return df
 
 
-def count_motifs(
-    file_paths: list[str], avg_lengths: dict[str, float], verbose: bool = False
-) -> pd.DataFrame:
-    """
-    Count motifs in the input files using seqkit locate.
-
-    Args:
-        file_paths (list[str]): List of file paths to process
-        avg_lengths (dict[str, float]): Dictionary with file paths as keys and their average sequence lengths as values
-        verbose (bool): If True, print the commands and their outputs
-
-    Returns:
-        pd.DataFrame: DataFrame with columns for file paths and motif counts
-    """
-    df = pd.DataFrame({"file": file_paths})
-
+def get_patterns():
     barcode_command = f"seqkit seq -n {BARCODE_PATH} -j {CPU_COUNT}"
     primer_command = f"seqkit seq -n {PRIMER_PATH} -j {CPU_COUNT}"
 
-    barcode_patterns = set(run_command(barcode_command, verbose))
-    primer_patterns = set(run_command(primer_command, verbose))
-    all_patterns = barcode_patterns.union(primer_patterns)
+    barcode_patterns = set(run_command(barcode_command))
+    primer_patterns = set(run_command(primer_command))
+    return barcode_patterns, primer_patterns
 
-    for pattern in all_patterns:
+
+def empty_pattern_df(patterns):
+    df = pd.DataFrame({"file": file_paths})
+    for pattern in patterns:
         df[pattern] = 0
+    return df
+
+
+def count_motifs(file_paths: list[str]) -> pd.DataFrame:
+    """
+    Count motifs in the input files using seqkit fish for adapterd and locate for primers.
+
+    Args:
+        file_paths (list[str]): List of file paths to process
+
+    Returns:
+        pd.DataFrame: DataFrame with rows for file paths and columns for and motif counts
+    """
+
+    barcode_patterns, primer_patterns = get_patterns()
+    all_patterns = barcode_patterns.union(primer_patterns)
+    df = empty_pattern_df(all_patterns)
 
     for fasta in file_paths:
-        barcode_command = (
-            f"seqkit locate {fasta} -Fi -m 0 -f {BARCODE_PATH} -j {CPU_COUNT}"
-        )
-        primer_command = f"seqkit locate {fasta} -d -f {PRIMER_PATH} -j {CPU_COUNT}"
+        # -d allow degenerate bases, -i case insensitive
+        barcode_command = f"seqkit locate {fasta} -di -f {BARCODE_PATH} -j {CPU_COUNT}"
+        primer_command = f"seqkit locate {fasta} -di -f {PRIMER_PATH} -j {CPU_COUNT}"
 
-        barcode_output = run_command(barcode_command, verbose)
-        primer_output = run_command(primer_command, verbose)
+        barcode_output = run_command(barcode_command)
+        primer_output = run_command(primer_command)
 
         # Write raw outputs to files
         with open("barcode_locate.tsv", "w") as f:
@@ -144,11 +138,8 @@ def count_motifs(
         with open("primer_locate.tsv", "w") as f:
             _ = f.write("\n".join(primer_output))
 
-        avg_length = avg_lengths[fasta]
-        barcode_counts = parse_seqkit_output(
-            barcode_output, is_barcode=True, avg_length=avg_length
-        )
-        primer_counts = parse_seqkit_output(primer_output, is_barcode=False)
+        barcode_counts = parse_seqkit_locate(barcode_output.strip().split("\n"))
+        primer_counts = parse_seqkit_locate(primer_output.strip().split("\n"))
 
         for pattern, count in {**barcode_counts, **primer_counts}.items():
             df.loc[df["file"] == fasta, pattern] = count
@@ -156,16 +147,12 @@ def count_motifs(
     return df
 
 
-def parse_seqkit_output(
-    output: list[str], is_barcode: bool = False, avg_length: float = 0
-) -> dict[str, int]:
+def parse_seqkit_locate(output: list[str]) -> dict[str, int]:
     """
     Parse the output of seqkit locate command.
 
     Args:
         output (list[str]): List of output lines from seqkit locate
-        is_barcode (bool): Whether the output is for barcodes (True) or primers (False)
-        avg_length (float): Average sequence length for the file being processed
 
     Returns:
         dict[str, int]: Dictionary with pattern names as keys and their counts as values
@@ -175,40 +162,32 @@ def parse_seqkit_output(
         columns = line.split("\t")
         if len(columns) >= 5:
             pattern = columns[1]
-            if is_barcode:
-                try:
-                    region = int(columns[4])
-                    if region <= 3 or region <= (avg_length - 10):
-                        pattern_counts[pattern] = pattern_counts.get(pattern, 0) + 1
-                except ValueError:
-                    continue
-            else:
-                pattern_counts[pattern] = pattern_counts.get(pattern, 0) + 1
+            pattern_counts[pattern] = pattern_counts.get(pattern, 0) + 1
     return pattern_counts
 
 
-def run_command(command: str, verbose: bool = False) -> list[str]:
+def run_command(command: str) -> str:
     """
     Execute a shell command and return its output as a list of strings.
 
     Args:
         command (str): The shell command to execute.
-        verbose (bool): If True, print the command and its output.
 
     Returns:
-        list[str]: The command's output split into lines.
+        str: The command's output split into lines.
 
     Raises:
         subprocess.CalledProcessError: If the command execution fails.
     """
-    if verbose:
-        print(command)
-    result = subprocess.run(
-        command, shell=True, check=True, capture_output=True, text=True
-    )
-    if verbose:
-        print(result.stdout)
-    return result.stdout.strip().split("\n")
+    try:
+        if VERBOSE:
+            print(command)
+        result = subprocess.run(
+            command, shell=True, check=True, capture_output=True, text=True
+        )
+    except subprocess.CalledProcessError as e:
+        raise RuntimeError(f"Error running seqkit stats: {e}")
+    return result.stdout
 
 
 def main():
@@ -235,18 +214,16 @@ def main():
 
     args = parser.parse_args()
 
-    global BARCODE_PATH, PRIMER_PATH
+    global BARCODE_PATH, PRIMER_PATH, VERBOSE
     BARCODE_PATH = args.barcode
     PRIMER_PATH = args.primer
+    VERBOSE = args.verbose
 
     try:
         file_paths = parse_input_path(args.input_path)
-        read_counts = count_reads(file_paths, args.verbose)
 
-        # Create a dictionary of average lengths
-        avg_lengths = dict(zip(read_counts["file"], read_counts["avg_len"]))
-
-        motif_counts = count_motifs(file_paths, avg_lengths, args.verbose)
+        read_counts = count_reads(file_paths)
+        motif_counts = count_motifs(file_paths)
 
         result = pd.merge(read_counts, motif_counts, on="file")
 
