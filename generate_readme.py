@@ -17,6 +17,7 @@ def get_help_output(script_path):
 
 def main():
     scripts = [
+        "src/pipeline.sh",
         "src/read_counts.py",
         "src/motif_counts.py",
         "src/parse_samplesheet_novogene.py",
@@ -33,11 +34,18 @@ cutadapt and to generate a sample sheet for nf-core/ampliseq.
 
 ## Usage
 
-Take a look at the example pipeline in `src/example_pipeline.sh`. This
-shows you how the scripts can be used in conjunction.\n\n
-"""
+The main pipeline script is `src/pipeline.sh`. Here's its usage information:
 
-    for script in scripts:
+"""
+    pipeline_help = get_help_output("src/pipeline.sh")
+    readme_content += "```\n"
+    readme_content += pipeline_help
+    readme_content += "```\n\n"
+
+    readme_content += "## Individual Scripts\n\n"
+    readme_content += "The following scripts are used within the pipeline:\n\n"
+
+    for script in scripts[1:]:  # Skip pipeline.sh as it's already been added
         help_output = get_help_output(script)
         readme_content += f"### {script}\n\n"
         readme_content += "```\n"
