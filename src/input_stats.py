@@ -89,8 +89,6 @@ def count_reads(file_paths: list[Path]) -> pd.DataFrame:
     command = f"seqkit stats {file_paths_str} -T --quiet -j {config.cpu_count}"
 
     output = run_command(command)
-
-    # Write the raw result to a file
     with open(config.output_path / "seqkit_stats_raw.tsv", "w") as f:
         _ = f.write(output)
 
@@ -200,7 +198,7 @@ def parse_seqkit_locate(
     else:
         search_dict = {seq.lstrip("^"): name for name, seq in patterns.items()}
 
-    for line in output[1:]:  # Skip the header line
+    for line in output[1:]:  
         try:
             _, pattern, *_ = line.split("\t")
             pattern = pattern.lstrip("^") if not use_pattern_names else pattern
@@ -208,7 +206,6 @@ def parse_seqkit_locate(
                 pattern_name = search_dict[pattern]
                 pattern_counts[pattern_name] += 1
         except ValueError:
-            # Skip lines that don't have the expected number of columns
             continue
 
     return pattern_counts
@@ -276,7 +273,7 @@ def main() -> None:
 
     global config
     config = Config(
-        barcode_path=args.barcode,
+        barcode_path= args.barcode,
         primer_path=args.primer,
         verbose=args.verbose,
         output_path=output_path,
