@@ -1,7 +1,6 @@
 import argparse
 import io
 import multiprocessing
-import os
 import re
 import subprocess
 from dataclasses import dataclass
@@ -12,8 +11,8 @@ import pandas as pd
 
 @dataclass
 class Config:
-    barcode_path: str
-    primer_path: str
+    barcode_path: Path
+    primer_path: Path
     verbose: bool
     output_path: Path
     write_to_file: bool
@@ -23,36 +22,35 @@ class Config:
 config: Config
 
 
-def parse_input_path(input_path: str) -> list[str]:
+def parse_input_path(input_path: Path) -> list[Path]:
     """
     Parse files in the input path, ensure they are paired-end, and return their file paths.
 
     Args:
-        input_path (str): Path to the directory containing FASTA/FASTQ files
+        input_path (Path): Path to the directory containing FASTA/FASTQ files
 
     Returns:
-        list[str]: List of file paths for valid paired-end FASTA/FASTQ files
+        list[Path]: List of file paths for valid paired-end FASTA/FASTQ files
 
     Raises:
         ValueError: If no valid files are found, file endings are not identical, not in accepted formats, or not paired-end
     """
     accepted_endings = {"fasta", "fastq", "fq", "fa", "fna"}
-    file_list: list[str] = []
+    file_list: list[Path] = []
     endings: set[str] = set()
     paired_files: dict[str, list[str]] = {}
 
-    for file in os.listdir(input_path):
-        file_path = os.path.join(input_path, file)
-        if os.path.isfile(file_path):
+    for file in input_path.iterdir():
+        if file.is_file():
             # Regex for paired-end files: base_name + 1 or 2 + .extension + optional .gz
             # Example: sample_R1.fastq.gz or sample_2.fq
             paired_end_pattern = r"^(.+)([12])\.([^.]+)(\.gz)?$"
-            match = re.match(paired_end_pattern, file)
+            match = re.match(paired_end_pattern, file.name)
             if match:
                 base_name, read_number, ending, gz = match.groups()
                 ending = ending.lower()
                 if ending in accepted_endings:
-                    file_list.append(file_path)
+                    file_list.append(file)
                     if gz:
                         endings.add(f"{ending}.gz")
                     else:
@@ -77,7 +75,7 @@ def parse_input_path(input_path: str) -> list[str]:
     return file_list
 
 
-def count_reads(file_paths: list[str]) -> pd.DataFrame:
+def count_reads(file_paths: list[Path]) -> pd.DataFrame:
     """
     Count reads and get average sequence length in FASTA/FASTQ files using seqkit stats.
 
@@ -87,7 +85,7 @@ def count_reads(file_paths: list[str]) -> pd.DataFrame:
     Returns:
         pd.DataFrame: DataFrame containing the file, num_seqs, and avg_len columns from seqkit stats output
     """
-    file_paths_str = " ".join(file_paths)
+    file_paths_str = " ".join(str(path) for path in file_paths)
     command = f"seqkit stats {file_paths_str} -T --quiet -j {config.cpu_count}"
 
     output = run_command(command)
@@ -111,7 +109,7 @@ def get_patterns() -> tuple[dict[str, str], dict[str, str]]:
             2. Primer patterns (key: name, value: sequence)
     """
 
-    def get_pattern_dict(file_path: str, cpu_count: int) -> dict[str, str]:
+    def get_pattern_dict(file_path: Path, cpu_count: int) -> dict[str, str]:
         name_command = f"seqkit seq -n {file_path} -j {cpu_count}"
         seq_command = f"seqkit seq -s {file_path} -j {cpu_count}"
         names = run_command(name_command).splitlines()
@@ -123,7 +121,7 @@ def get_patterns() -> tuple[dict[str, str], dict[str, str]]:
     return barcode_patterns, primer_patterns
 
 
-def count_motifs(file_paths: list[str]) -> pd.DataFrame:
+def count_motifs(file_paths: list[Path]) -> pd.DataFrame:
     """
     Count motifs in the input files using seqkit locate for both barcodes and primers.
 
@@ -135,9 +133,9 @@ def count_motifs(file_paths: list[str]) -> pd.DataFrame:
     """
 
     def empty_pattern_df(
-        patterns: dict[str, str], file_paths: list[str]
+        patterns: dict[str, str], file_paths: list[Path]
     ) -> pd.DataFrame:
-        df = pd.DataFrame({"file": file_paths})
+        df = pd.DataFrame({"file": [str(path) for path in file_paths]})
         for pattern in patterns.keys():
             df[pattern] = 0
         return df
@@ -247,16 +245,16 @@ def main() -> None:
     _ = parser.add_argument(
         "input_path",
         help="Path to the directory containing FASTA/FASTQ files",
-        type=str,
+        type=Path,
     )
-    _ = parser.add_argument("barcode", help="Path to the barcode FASTA file", type=str)
-    _ = parser.add_argument("primer", help="Path to the primer FASTA file", type=str)
+    _ = parser.add_argument("barcode", help="Path to the barcode FASTA file", type=Path)
+    _ = parser.add_argument("primer", help="Path to the primer FASTA file", type=Path)
     _ = parser.add_argument(
         "-o",
         "--output",
-        default="./",
+        default=Path("./"),
         help="Output directory path. Default is current directory.",
-        type=str,
+        type=Path,
     )
     _ = parser.add_argument(
         "-v",
@@ -272,8 +270,8 @@ def main() -> None:
     )
 
     args = parser.parse_args()
-    input_path = str(args.input_path)
-    output_path = Path(args.output)
+    input_path = args.input_path
+    output_path = args.output
     output_path.mkdir(parents=True, exist_ok=True)
 
     global config
