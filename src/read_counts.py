@@ -32,7 +32,8 @@ def count_reads(file_paths: list[Path], cpu_count: int) -> pd.DataFrame:
 
 def main() -> None:
     parser = argparse.ArgumentParser(
-        description="Count reads in a dir of input FASTA/FASTQ files."
+        description="Count reads in a directory of input FASTA/FASTQ files using seqkit stats. "
+        "The results are stored as a TSV file in the specified output path."
     )
     _ = parser.add_argument(
         "input_path",
@@ -45,6 +46,12 @@ def main() -> None:
         default=Path("./"),
         help="Output directory path. Default is current directory.",
         type=Path,
+    )
+    _ = parser.add_argument(
+        "-h",
+        "--help",
+        action="help",
+        help="Show this help message and exit",
     )
 
     args = parser.parse_args()
