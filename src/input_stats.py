@@ -17,7 +17,6 @@ class Config:
     cpu_count: int = multiprocessing.cpu_count()
 
 
-# Global configuration object
 config: Config
 
 
@@ -72,7 +71,6 @@ def parse_input_path(input_path: str) -> list[str]:
         raise ValueError(
             f"Incomplete paired-end files found for: {', '.join(incomplete_pairs)}"
         )
-
     return file_list
 
 
@@ -97,7 +95,6 @@ def count_reads(file_paths: list[str]) -> pd.DataFrame:
 
     df = pd.read_csv(io.StringIO(output), sep="\t")
     df = df[["file", "num_seqs", "avg_len"]]
-
     return df
 
 
@@ -114,23 +111,13 @@ def get_patterns() -> tuple[dict[str, str], dict[str, str]]:
     def get_pattern_dict(file_path: str, cpu_count: int) -> dict[str, str]:
         name_command = f"seqkit seq -n {file_path} -j {cpu_count}"
         seq_command = f"seqkit seq -s {file_path} -j {cpu_count}"
-
         names = run_command(name_command).splitlines()
         seqs = run_command(seq_command).splitlines()
-
         return dict(zip(names, seqs))
 
     barcode_patterns = get_pattern_dict(config.barcode_path, config.cpu_count)
     primer_patterns = get_pattern_dict(config.primer_path, config.cpu_count)
-
     return barcode_patterns, primer_patterns
-
-
-def empty_pattern_df(patterns: dict[str, str], file_paths: list[str]) -> pd.DataFrame:
-    df = pd.DataFrame({"file": file_paths})
-    for pattern in patterns.keys():
-        df[pattern] = 0
-    return df
 
 
 def count_motifs(file_paths: list[str]) -> pd.DataFrame:
@@ -143,6 +130,14 @@ def count_motifs(file_paths: list[str]) -> pd.DataFrame:
     Returns:
         pd.DataFrame: DataFrame with rows for file paths and columns for motif counts
     """
+
+    def empty_pattern_df(
+        patterns: dict[str, str], file_paths: list[str]
+    ) -> pd.DataFrame:
+        df = pd.DataFrame({"file": file_paths})
+        for pattern in patterns.keys():
+            df[pattern] = 0
+        return df
 
     barcode_patterns, primer_patterns = get_patterns()
     all_patterns = {**barcode_patterns, **primer_patterns}
