@@ -1,4 +1,5 @@
 import argparse
+import io
 import multiprocessing
 import subprocess
 from dataclasses import dataclass
@@ -36,8 +37,7 @@ def count_reads(file_paths: list[Path]) -> pd.DataFrame:
     command = f"seqkit stats {file_paths_str} -T --quiet -j {config.cpu_count}"
 
     output = run_command(command)
-    with open(config.output_path / "seqkit_stats_raw.tsv", "w") as f:
-        _ = f.write(output)
+    write_output(output, "seqkit_stats_raw.tsv")
 
     df = pd.read_csv(io.StringIO(output), sep="\t")
     df = df[["file", "num_seqs", "avg_len"]]
