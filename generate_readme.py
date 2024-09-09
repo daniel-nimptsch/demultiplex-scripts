@@ -17,11 +17,12 @@ def get_help_output(script_path):
 
 def main():
     scripts = [
+        "src/read_counts.py",
+        "src/motif_counts.py",
         "src/parse_samplesheet_novogene.py",
         "src/barcodes_to_fasta.py",
         "src/demultiplex.py",
         "src/patterns_copy.py",
-        "src/dir_to_reads_tsv.sh",
         "src/ampliseq_samplesheet_gen.py",
     ]
 

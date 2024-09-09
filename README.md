@@ -9,6 +9,43 @@ Take a look at the example pipeline in `src/example_pipeline.sh`. This
 shows you how the scripts can be used in conjunction.
 
 
+### src/read_counts.py
+
+```
+usage: read_counts.py [-h] [-o OUTPUT] input_path
+
+Count reads in a dir of input FASTA/FASTQ files.
+
+positional arguments:
+  input_path            Path to the directory containing FASTA/FASTQ files
+
+options:
+  -h, --help            show this help message and exit
+  -o OUTPUT, --output OUTPUT
+                        Output directory path. Default is current directory.
+```
+
+### src/motif_counts.py
+
+```
+usage: motif_counts.py [-h] [-o OUTPUT] [-v] [-w] input_path barcode primer
+
+Count subset of reads with specific adapter or primer sequences in input
+FASTA/FASTQ files.
+
+positional arguments:
+  input_path            Path to the input path with fastq files.
+  barcode               Path to the barcode FASTA file
+  primer                Path to the primer FASTA file
+
+options:
+  -h, --help            show this help message and exit
+  -o OUTPUT, --output OUTPUT
+                        Output directory path. Default is current directory.
+  -v, --verbose         Print seqkit commands and their outputs
+  -w, --write-to-file   Write result to a TSV file. Default is False.
+```
+
 ### src/parse_samplesheet_novogene.py
 
 ```
@@ -32,10 +69,10 @@ usage: barcodes_to_fasta.py [-h] [--include-primers] [-o OUTPUT] [samplesheet]
 Generate FASTA files from a samplesheet (TSV) containing sample names and
 barcodes. The samplesheet should be tab-delimited with the following format:
 sample name, forward barcode, reverse barcode, forward barcode name, reverse
-barcode name,forward primer and reverse primer. Additionally a patterns file
-is generated for the use after cutadapts demultiplex of paired-end reads with
-combinatorial dual indexes. The patterns file can be used as input with
-patterns_copy.py.
+barcode name, forward primer, reverse primer, and primer name. Additionally a
+patterns file is generated for the use after cutadapts demultiplex of paired-
+end reads with combinatorial dual indexes. The patterns file can be used as
+input with patterns_copy.py.
 
 positional arguments:
   samplesheet           Path to the samplesheet TSV (default: stdin)
@@ -51,7 +88,8 @@ options:
 ### src/demultiplex.py
 
 ```
-usage: demultiplex.py [-h] [-o OUTPUT] [-c]
+usage: demultiplex.py [-h] [-o OUTPUT] [-c] [-e ERROR_RATE]
+                      [--min-overlap MIN_OVERLAP]
                       fq_gz_1 fq_gz_2 forward_fasta reverse_fasta
 
 Demultiplex with cutadapt paired end FASTQ files using forward and reverse
@@ -73,6 +111,11 @@ options:
   -c, --combinatorial   Use combinatorial dual indexes for demultiplexing
                         paired-end reads (default: False). In the default case
                         demultiplexing unique dual indices is executed.
+  -e ERROR_RATE, --error-rate ERROR_RATE
+                        Maximum expected error rate (default: 0.14)
+  --min-overlap MIN_OVERLAP
+                        Minimum overlap length for adapter matching (default:
+                        3)
 ```
 
 ### src/patterns_copy.py
@@ -93,13 +136,6 @@ options:
   -o OUTPUT, --output OUTPUT
                         The output dir to copy the renamed. If not provided,
                         output will be ./.
-```
-
-### src/dir_to_reads_tsv.sh
-
-```
-Usage: bash src/dir_to_reads_tsv.sh <input_directory>
-Example: bash src/dir_to_reads_tsv.sh data/demultiplex/work
 ```
 
 ### src/ampliseq_samplesheet_gen.py
