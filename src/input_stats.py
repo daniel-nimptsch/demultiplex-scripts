@@ -4,7 +4,6 @@ import multiprocessing
 import os
 import re
 import subprocess
-from typing import List
 
 import pandas as pd
 
@@ -68,12 +67,12 @@ def parse_input_path(input_path: str) -> list[str]:
     return file_list
 
 
-def count_reads(file_paths: List[str], verbose: bool = False) -> pd.DataFrame:
+def count_reads(file_paths: list[str], verbose: bool = False) -> pd.DataFrame:
     """
     Count reads and get average sequence length in FASTA/FASTQ files using seqkit stats.
 
     Args:
-        file_paths (List[str]): List of file paths to process
+        file_paths (list[str]): List of file paths to process
         verbose (bool): If True, print the command and its output
 
     Returns:
@@ -94,7 +93,7 @@ def count_reads(file_paths: List[str], verbose: bool = False) -> pd.DataFrame:
 
         # Write the raw result to a file
         with open("seqkit_stats_raw.tsv", "w") as f:
-            f.write(result.stdout)
+            _ = f.write(result.stdout)
 
         df = pd.read_csv(io.StringIO(result.stdout), sep="\t")
         df = df[["file", "num_seqs", "avg_len"]]
@@ -105,13 +104,13 @@ def count_reads(file_paths: List[str], verbose: bool = False) -> pd.DataFrame:
 
 
 def count_motifs(
-    file_paths: List[str], avg_lengths: dict[str, float], verbose: bool = False
+    file_paths: list[str], avg_lengths: dict[str, float], verbose: bool = False
 ) -> pd.DataFrame:
     """
     Count motifs in the input files using seqkit locate.
 
     Args:
-        file_paths (List[str]): List of file paths to process
+        file_paths (list[str]): List of file paths to process
         avg_lengths (dict[str, float]): Dictionary with file paths as keys and their average sequence lengths as values
         verbose (bool): If True, print the commands and their outputs
 
@@ -141,9 +140,9 @@ def count_motifs(
 
         # Write raw outputs to files
         with open("barcode_locate.tsv", "w") as f:
-            f.write("\n".join(barcode_output))
+            _ = f.write("\n".join(barcode_output))
         with open("primer_locate.tsv", "w") as f:
-            f.write("\n".join(primer_output))
+            _ = f.write("\n".join(primer_output))
 
         avg_length = avg_lengths[fasta]
         barcode_counts = parse_seqkit_output(
@@ -188,7 +187,7 @@ def parse_seqkit_output(
     return pattern_counts
 
 
-def run_command(command: str, verbose: bool = False) -> List[str]:
+def run_command(command: str, verbose: bool = False) -> list[str]:
     """
     Execute a shell command and return its output as a list of strings.
 
@@ -197,7 +196,7 @@ def run_command(command: str, verbose: bool = False) -> List[str]:
         verbose (bool): If True, print the command and its output.
 
     Returns:
-        List[str]: The command's output split into lines.
+        list[str]: The command's output split into lines.
 
     Raises:
         subprocess.CalledProcessError: If the command execution fails.
@@ -214,7 +213,7 @@ def run_command(command: str, verbose: bool = False) -> List[str]:
 
 def main():
     parser = argparse.ArgumentParser(
-        description="Count reads in FASTA/FASTQ files and subset reads with specific adapter or primer sequences using seqkit."
+        description="Count reads in input FASTA/FASTQ files and the subset of reads with a specific adapter or primer sequences."
     )
     _ = parser.add_argument(
         "input_path", help="Path to the directory containing FASTA/FASTQ files"
