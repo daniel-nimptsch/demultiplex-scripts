@@ -162,12 +162,6 @@ def main():
     )
     save_patterns(barcodes, output_dir)
 
-    print(f"Created barcode FASTA files: {forward_fasta}, {reverse_fasta}")
-    if not args.include_primers:
-        print(
-            f"Created primer FASTA files: {forward_primer_fasta}, {reverse_primer_fasta}"
-        )
-
 
 if __name__ == "__main__":
     main()
