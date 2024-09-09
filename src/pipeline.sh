@@ -22,11 +22,13 @@ display_help() {
     echo "  Note: Default demultiplexing parameters are set for barcodes of length 7. Adjust as needed."
     echo
     echo "Outputs:"
-    echo "  - Demultiplexed FASTQ files"
-    echo "  - Read count reports for input and demultiplexed FASTQs"
-    echo "  - Motif count report"
-    echo "  - Ampliseq-compatible samplesheet"
-    echo "  - Intermediate files (barcodes, primers, patterns)"
+    echo "  - Demultiplexed FASTQ files (stored in <output_dir>/demux_renamed/)"
+    echo "  - Read count reports:"
+    echo "    * For input FASTQs (stored in the input FASTQ directory)"
+    echo "    * For demultiplexed FASTQs (stored in <output_dir>/demux_renamed/ and <output_dir>/work/fastqs/)"
+    echo "  - Motif count report (stored in the input FASTQ directory)"
+    echo "  - Ampliseq-compatible samplesheet (stored in <output_dir>/demux_renamed/)"
+    echo "  - Intermediate files (barcodes, primers, patterns) (stored in <output_dir>/work/)"
     echo
     echo "Arguments:"
     echo "  <input_samplesheet>    Path to the input samplesheet"
