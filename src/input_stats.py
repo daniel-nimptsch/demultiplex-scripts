@@ -197,12 +197,12 @@ def parse_seqkit_locate(
     if use_pattern_names:
         search_dict = {name: name for name in patterns}
     else:
-        search_dict = {seq.lstrip('^'): name for name, seq in patterns.items()}
+        search_dict = {seq.lstrip("^"): name for name, seq in patterns.items()}
 
     for line in output[1:]:  # Skip the header line
         try:
             _, pattern, *_ = line.split("\t")
-            pattern = pattern.lstrip('^') if not use_pattern_names else pattern
+            pattern = pattern.lstrip("^") if not use_pattern_names else pattern
             if pattern in search_dict:
                 pattern_name = search_dict[pattern]
                 pattern_counts[pattern_name] += 1
