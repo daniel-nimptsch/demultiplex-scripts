@@ -8,6 +8,7 @@ from dataclasses import dataclass
 
 import pandas as pd
 
+
 @dataclass
 class Config:
     barcode_path: str
@@ -15,8 +16,10 @@ class Config:
     verbose: bool
     cpu_count: int = multiprocessing.cpu_count()
 
+
 # Global configuration object
 config: Config
+
 
 def parse_input_path(input_path: str) -> list[str]:
     """
@@ -131,25 +134,29 @@ def count_motifs(file_paths: list[str]) -> pd.DataFrame:
 
     for fasta in file_paths:
         # -d allow degenerate bases, -i case insensitive
-        barcode_command = f"seqkit locate {fasta} -di -f {config.barcode_path} -j {config.cpu_count}"
-        primer_command = f"seqkit locate {fasta} -di -f {config.primer_path} -j {config.cpu_count}"
+        barcode_command = (
+            f"seqkit locate {fasta} -di -f {config.barcode_path} -j {config.cpu_count}"
+        )
+        primer_command = (
+            f"seqkit locate {fasta} -di -f {config.primer_path} -j {config.cpu_count}"
+        )
 
         barcode_output = run_command(barcode_command)
-        # primer_output = run_command(primer_command)
-        #
-        # # Write raw outputs to files
-        # with open("barcode_locate.tsv", "w") as f:
-        #     _ = f.write("\n".join(barcode_output))
-        # with open("primer_locate.tsv", "w") as f:
-        #     _ = f.write("\n".join(primer_output))
-        #
-        # barcode_counts = parse_seqkit_locate(barcode_output.strip().split("\n"))
-        # primer_counts = parse_seqkit_locate(primer_output.strip().split("\n"))
-        #
-        # for pattern, count in {**barcode_counts, **primer_counts}.items():
-        #     df.loc[df["file"] == fasta, pattern] = count
+        primer_output = run_command(primer_command)
 
-    # return df
+        # Write raw outputs to files
+        with open("barcode_locate.tsv", "w") as f:
+            _ = f.write("\n".join(barcode_output))
+        with open("primer_locate.tsv", "w") as f:
+            _ = f.write("\n".join(primer_output))
+
+        barcode_counts = parse_seqkit_locate(barcode_output.strip().split("\n"))
+        primer_counts = parse_seqkit_locate(primer_output.strip().split("\n"))
+
+        for pattern, count in {**barcode_counts, **primer_counts}.items():
+            df.loc[df["file"] == fasta, pattern] = count
+
+    return df
 
 
 def parse_seqkit_locate(output: list[str]) -> dict[str, int]:
@@ -226,25 +233,19 @@ def main() -> None:
 
     global config
     config = Config(
-        barcode_path=args.barcode,
-        primer_path=args.primer,
-        verbose=args.verbose
+        barcode_path=args.barcode, primer_path=args.primer, verbose=args.verbose
     )
 
     try:
         file_paths = parse_input_path(input_path)
-
         read_counts = count_reads(file_paths)
+        motif_counts = count_motifs(file_paths)
+        result = pd.merge(read_counts, motif_counts, on="file")
 
-        # motif_counts = count_motifs(file_paths)
-        count_motifs(file_paths)
-
-        # result = pd.merge(read_counts, motif_counts, on="file")
-        #
-        # if output:
-        #     result.to_csv(output, sep="\t", index=False)
-        # else:
-        #     print(result.to_string(index=False))
+        if output:
+            result.to_csv(output, sep="\t", index=False)
+        else:
+            print(result.to_string(index=False))
 
     except (ValueError, RuntimeError) as e:
         print(f"Error: {str(e)}")
