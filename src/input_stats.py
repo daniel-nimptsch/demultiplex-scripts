@@ -5,6 +5,7 @@ import os
 import re
 import subprocess
 from dataclasses import dataclass
+from pathlib import Path
 
 import pandas as pd
 
@@ -14,6 +15,8 @@ class Config:
     barcode_path: str
     primer_path: str
     verbose: bool
+    output_path: Path
+    stdout: bool
     cpu_count: int = multiprocessing.cpu_count()
 
 
@@ -90,7 +93,7 @@ def count_reads(file_paths: list[str]) -> pd.DataFrame:
     output = run_command(command)
 
     # Write the raw result to a file
-    with open("seqkit_stats_raw.tsv", "w") as f:
+    with open(config.output_path / "seqkit_stats_raw.tsv", "w") as f:
         _ = f.write(output)
 
     df = pd.read_csv(io.StringIO(output), sep="\t")
@@ -158,9 +161,9 @@ def count_motifs(file_paths: list[str]) -> pd.DataFrame:
         primer_output = run_command(primer_command)
 
         # Write raw outputs to files
-        with open("barcode_locate.tsv", "w") as f:
+        with open(config.output_path / "barcode_locate.tsv", "w") as f:
             _ = f.write(barcode_output)
-        with open("primer_locate.tsv", "w") as f:
+        with open(config.output_path / "primer_locate.tsv", "w") as f:
             _ = f.write(primer_output)
 
         barcode_counts = parse_seqkit_locate(
@@ -251,8 +254,8 @@ def main() -> None:
     _ = parser.add_argument(
         "-o",
         "--output",
-        default=None,
-        help="Output TSV file path. If not specified, output will be printed to stdout.",
+        default="./",
+        help="Output directory path. Default is current directory.",
         type=str,
     )
     _ = parser.add_argument(
@@ -261,14 +264,25 @@ def main() -> None:
         action="store_true",
         help="Print seqkit commands and their outputs",
     )
+    _ = parser.add_argument(
+        "--stdout",
+        action="store_true",
+        default=True,
+        help="Print result to stdout. Default is True.",
+    )
 
     args = parser.parse_args()
     input_path = str(args.input_path)
-    output = str(args.output)
+    output_path = Path(args.output)
+    output_path.mkdir(parents=True, exist_ok=True)
 
     global config
     config = Config(
-        barcode_path=args.barcode, primer_path=args.primer, verbose=args.verbose
+        barcode_path=args.barcode,
+        primer_path=args.primer,
+        verbose=args.verbose,
+        output_path=output_path,
+        stdout=args.stdout,
     )
 
     try:
@@ -277,10 +291,10 @@ def main() -> None:
         motif_counts = count_motifs(file_paths)
         result = pd.merge(read_counts, motif_counts, on="file")
 
-        if output:
-            result.to_csv(output, sep="\t", index=False)
-        else:
+        if config.stdout:
             print(result.to_string(index=False))
+        else:
+            result.to_csv(config.output_path / "motif_counts.tsv", sep="\t", index=False)
 
     except (ValueError, RuntimeError) as e:
         print(f"Error: {str(e)}")
