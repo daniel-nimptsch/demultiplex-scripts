@@ -127,21 +127,21 @@ def count_motifs(file_paths: list[str]) -> pd.DataFrame:
         primer_command = f"seqkit locate {fasta} -di -f {PRIMER_PATH} -j {CPU_COUNT}"
 
         barcode_output = run_command(barcode_command)
-        primer_output = run_command(primer_command)
+        # primer_output = run_command(primer_command)
+        #
+        # # Write raw outputs to files
+        # with open("barcode_locate.tsv", "w") as f:
+        #     _ = f.write("\n".join(barcode_output))
+        # with open("primer_locate.tsv", "w") as f:
+        #     _ = f.write("\n".join(primer_output))
+        #
+        # barcode_counts = parse_seqkit_locate(barcode_output.strip().split("\n"))
+        # primer_counts = parse_seqkit_locate(primer_output.strip().split("\n"))
+        #
+        # for pattern, count in {**barcode_counts, **primer_counts}.items():
+        #     df.loc[df["file"] == fasta, pattern] = count
 
-        # Write raw outputs to files
-        with open("barcode_locate.tsv", "w") as f:
-            _ = f.write("\n".join(barcode_output))
-        with open("primer_locate.tsv", "w") as f:
-            _ = f.write("\n".join(primer_output))
-
-        barcode_counts = parse_seqkit_locate(barcode_output.strip().split("\n"))
-        primer_counts = parse_seqkit_locate(primer_output.strip().split("\n"))
-
-        for pattern, count in {**barcode_counts, **primer_counts}.items():
-            df.loc[df["file"] == fasta, pattern] = count
-
-    return df
+    # return df
 
 
 def parse_seqkit_locate(output: list[str]) -> dict[str, int]:
@@ -226,14 +226,16 @@ def main() -> None:
         file_paths = parse_input_path(input_path)
 
         read_counts = count_reads(file_paths)
-        motif_counts = count_motifs(file_paths)
 
-        result = pd.merge(read_counts, motif_counts, on="file")
+        # motif_counts = count_motifs(file_paths)
+        count_motifs(file_paths)
 
-        if output:
-            result.to_csv(output, sep="\t", index=False)
-        else:
-            print(result.to_string(index=False))
+        # result = pd.merge(read_counts, motif_counts, on="file")
+        #
+        # if output:
+        #     result.to_csv(output, sep="\t", index=False)
+        # else:
+        #     print(result.to_string(index=False))
 
     except (ValueError, RuntimeError) as e:
         print(f"Error: {str(e)}")
