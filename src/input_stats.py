@@ -4,16 +4,17 @@ import multiprocessing
 import os
 import re
 import subprocess
+from typing import Dict, List, Set, Tuple
 
 import pandas as pd
 
-BARCODE_PATH = ""
-PRIMER_PATH = ""
-VERBOSE = ""
-CPU_COUNT = multiprocessing.cpu_count()
+BARCODE_PATH: str = ""
+PRIMER_PATH: str = ""
+VERBOSE: bool = False
+CPU_COUNT: int = multiprocessing.cpu_count()
 
 
-def parse_input_path(input_path: str) -> list[str]:
+def parse_input_path(input_path: str) -> List[str]:
     """
     Parse files in the input path, ensure they are paired-end, and return their file paths.
 
@@ -68,7 +69,7 @@ def parse_input_path(input_path: str) -> list[str]:
     return file_list
 
 
-def count_reads(file_paths: list[str]) -> pd.DataFrame:
+def count_reads(file_paths: List[str]) -> pd.DataFrame:
     """
     Count reads and get average sequence length in FASTA/FASTQ files using seqkit stats.
 
@@ -93,7 +94,7 @@ def count_reads(file_paths: list[str]) -> pd.DataFrame:
     return df
 
 
-def get_patterns():
+def get_patterns() -> Tuple[Set[str], Set[str]]:
     barcode_command = f"seqkit seq -n {BARCODE_PATH} -j {CPU_COUNT}"
     primer_command = f"seqkit seq -n {PRIMER_PATH} -j {CPU_COUNT}"
 
@@ -102,14 +103,14 @@ def get_patterns():
     return barcode_patterns, primer_patterns
 
 
-def empty_pattern_df(patterns):
+def empty_pattern_df(patterns: Set[str]) -> pd.DataFrame:
     df = pd.DataFrame({"file": file_paths})
     for pattern in patterns:
         df[pattern] = 0
     return df
 
 
-def count_motifs(file_paths: list[str]) -> pd.DataFrame:
+def count_motifs(file_paths: List[str]) -> pd.DataFrame:
     """
     Count motifs in the input files using seqkit fish for adapterd and locate for primers.
 
@@ -147,7 +148,7 @@ def count_motifs(file_paths: list[str]) -> pd.DataFrame:
     return df
 
 
-def parse_seqkit_locate(output: list[str]) -> dict[str, int]:
+def parse_seqkit_locate(output: List[str]) -> Dict[str, int]:
     """
     Parse the output of seqkit locate command.
 
@@ -190,7 +191,7 @@ def run_command(command: str) -> str:
     return result.stdout
 
 
-def main():
+def main() -> None:
     parser = argparse.ArgumentParser(
         description="Count reads in input FASTA/FASTQ files and the subset of reads with a specific adapter or primer sequences."
     )
