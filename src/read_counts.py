@@ -57,11 +57,11 @@ def main() -> None:
         file_paths = parse_input_path(args.input_path)
         read_counts, raw_output = count_reads(file_paths, multiprocessing.cpu_count())
 
-        write_output(raw_output, "seqkit_stats_raw.tsv", args.input_path)
+        write_output(raw_output, "seqkit_stats.tsv", args.input_path)
         if args.output:
             write_output(
                 read_counts.to_csv(sep="\t", index=False, lineterminator="\n"),
-                "seqkit_stats.tsv",
+                "read_counts.tsv",
                 args.output,
             )
         else:
