@@ -6,8 +6,9 @@ from pathlib import Path
 
 import pandas as pd
 
-from file_utils import parse_input_path, run_command
+from file_utils import parse_input_path
 from count_reads_path import count_reads
+from command_utils import run_command
 
 
 @dataclass
@@ -36,8 +37,8 @@ def get_patterns() -> tuple[dict[str, str], dict[str, str]]:
     def get_pattern_dict(file_path: Path, cpu_count: int) -> dict[str, str]:
         name_command = f"seqkit seq -n {file_path} -j {cpu_count}"
         seq_command = f"seqkit seq -s {file_path} -j {cpu_count}"
-        names = run_command(name_command).splitlines()
-        seqs = run_command(seq_command).splitlines()
+        names = run_command(name_command, config.verbose).splitlines()
+        seqs = run_command(seq_command, config.verbose).splitlines()
         return dict(zip(names, seqs))
 
     barcode_patterns = get_pattern_dict(config.barcode_path, config.cpu_count)
@@ -60,7 +61,7 @@ def run_seqkit_locate(fasta: Path, patterns: dict[str, str], is_primer: bool) ->
     else:
         patterns_str = ",".join(f"^{seq}" for seq in patterns.values())
         command = f"seqkit locate {fasta} -di -p {patterns_str} -j {config.cpu_count}"
-    return run_command(command)
+    return run_command(command, config.verbose)
 
 
 def write_output(output: str, filename: str) -> None:
@@ -138,29 +139,6 @@ def parse_seqkit_locate(
 
     return pattern_counts
 
-
-def run_command(command: str) -> str:
-    """
-    Execute a shell command and return its output as a list of strings.
-
-    Args:
-        command (str): The shell command to execute.
-
-    Returns:
-        str: The command's output split into lines.
-
-    Raises:
-        subprocess.CalledProcessError: If the command execution fails.
-    """
-    try:
-        if config.verbose:
-            print(command)
-        result = subprocess.run(
-            command, shell=True, check=True, capture_output=True, text=True
-        )
-    except subprocess.CalledProcessError as e:
-        raise RuntimeError(f"Error running seqkit stats: {e}")
-    return result.stdout
 
 
 def main() -> None:
