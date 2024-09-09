@@ -106,15 +106,9 @@ DEMUX_CMD="python demultiplex-scripts/src/demultiplex.py \
     \"$DEMUX_PATH/work/barcodes_fwd.fasta\" \
     \"$DEMUX_PATH/work/barcodes_rev.fasta\" \
     -o \"$DEMUX_PATH/work\" \
-    -c"
-
-if [ -n "$ERROR_RATE" ]; then
-    DEMUX_CMD+=" -e $ERROR_RATE"
-fi
-
-if [ -n "$MIN_OVERLAP" ]; then
-    DEMUX_CMD+=" --min-overlap $MIN_OVERLAP"
-fi
+    -c \
+    -e ${ERROR_RATE} \
+    --min-overlap ${MIN_OVERLAP}"
 
 eval $DEMUX_CMD
 
