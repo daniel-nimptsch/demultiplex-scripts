@@ -9,7 +9,7 @@ display_help() {
     echo "  The process includes:"
     echo "  1. (Optional) Parsing the Novogene samplesheet to the default INPUT_SAMPLESHEET format (tab-delimited)."
     echo "     This step may be skipped if INPUT_SAMPLESHEET is already in the correct format:"
-    echo "     sample_id<tab>barcode_fwd<tab>barcode_rev<tab>primer_fwd<tab>primer_rev"
+    echo "     sample_name<tab>forward_barcode<tab>reverse_barcode<tab>forward_barcode_name<tab>reverse_barcode_name<tab>forward_primer<tab>reverse_primer<tab>primer_name"
     echo "  2. Creating barcode and primer FASTA files for demultiplexing and motif counting,"
     echo "     and generating a pattern file for copying demultiplexed FASTQs."
     echo "  3. Counting reads in the input FASTQ files."
