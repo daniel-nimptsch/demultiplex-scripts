@@ -16,18 +16,24 @@ def run_command(command, output_dir):
 
 
 def run_cutadapt(
-    forward_fasta, reverse_fasta, fq_gz_1, fq_gz_2, combinatorial, output_dir,
-    error_rate, min_overlap
+    forward_fasta,
+    reverse_fasta,
+    fq_gz_1,
+    fq_gz_2,
+    combinatorial,
+    output_dir,
+    error_rate,
+    min_overlap,
 ):
     """
     Execute the cutadapt command with the given parameters.
     """
-    error_rate_param = f"-e {error_rate}" if error_rate is not None else "-e 0.14"
-    min_overlap_param = f"--overlap {min_overlap}" if min_overlap is not None else ""
+    error_rate_param = error_rate if error_rate is not None else "0.14"
+    min_overlap_param = min_overlap if min_overlap is not None else "3"
 
     if combinatorial:
         command = (
-            f"cutadapt {error_rate_param} {min_overlap_param} --no-indels --cores=0 "
+            f"cutadapt -e {error_rate_param} -O {min_overlap_param} --no-indels --cores=0 "
             f"--revcomp "
             f"-g ^file:{forward_fasta} "
             f"-G ^file:{reverse_fasta} "
@@ -38,7 +44,7 @@ def run_cutadapt(
         )
     else:
         command = (
-            f"cutadapt {error_rate_param} {min_overlap_param} --no-indels --pair-adapters --cores=0 "
+            f"cutadapt -e {error_rate_param} -O {min_overlap_param} --no-indels --pair-adapters --cores=0 "
             f"--revcomp "
             f"-g ^file:{forward_fasta} "
             f"-G ^file:{reverse_fasta} "
@@ -111,7 +117,7 @@ def main():
     _ = parser.add_argument(
         "--min-overlap",
         type=int,
-        help="Minimum overlap length for adapter matching (default: None)",
+        help="Minimum overlap length for adapter matching (default: 3)",
     )
 
     args = parser.parse_args()
