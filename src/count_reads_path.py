@@ -3,7 +3,7 @@ from pathlib import Path
 
 import pandas as pd
 
-from file_utils import run_command
+from command_utils import run_command
 
 
 def count_reads(file_paths: list[Path], cpu_count: int) -> pd.DataFrame:
