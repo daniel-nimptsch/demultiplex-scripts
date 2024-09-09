@@ -53,3 +53,15 @@ def parse_input_path(input_path: Path) -> list[Path]:
             f"Incomplete paired-end files found for: {', '.join(incomplete_pairs)}"
         )
     return file_list
+
+def write_output(output: str, filename: str, output_path: Path) -> None:
+    """
+    Write the given output to a file in the specified output path.
+
+    Args:
+        output (str): The content to write to the file.
+        filename (str): The name of the file to create.
+        output_path (Path): The directory path where the file should be created.
+    """
+    with open(output_path / filename, "w") as f:
+        _ = f.write(output)

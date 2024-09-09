@@ -7,7 +7,7 @@ import pandas as pd
 
 from command_utils import run_command
 from count_reads_path import count_reads
-from file_utils import parse_input_path
+from file_utils import parse_input_path, write_output
 
 
 @dataclass
@@ -63,10 +63,6 @@ def run_seqkit_locate(fasta: Path, patterns: dict[str, str], is_primer: bool) ->
     return run_command(command, config.verbose)
 
 
-def write_output(output: str, filename: str) -> None:
-    with open(config.output_path / filename, "w") as f:
-        _ = f.write(output)
-
 
 def parse_seqkit_locate(
     output: list[str], patterns: dict[str, str], use_pattern_names: bool = False
@@ -121,8 +117,8 @@ def count_motifs(file_paths: list[Path]) -> pd.DataFrame:
         barcode_output = run_seqkit_locate(fasta, barcode_patterns, is_primer=False)
         primer_output = run_seqkit_locate(fasta, primer_patterns, is_primer=True)
 
-        write_output(barcode_output, f"{fasta_name}_barcode_stats.tsv")
-        write_output(primer_output, f"{fasta_name}_primer_stats.tsv")
+        write_output(barcode_output, f"{fasta_name}_barcode_stats.tsv", config.output_path)
+        write_output(primer_output, f"{fasta_name}_primer_stats.tsv", config.output_path)
 
         barcode_counts = parse_seqkit_locate(
             barcode_output.strip().split("\n"),
@@ -188,7 +184,7 @@ def main() -> None:
     try:
         file_paths = parse_input_path(input_path)
         read_counts = count_reads(file_paths, config.cpu_count)
-        write_output(read_counts.to_csv(sep="\t", index=False), "seqkit_stats_raw.tsv")
+        write_output(read_counts.to_csv(sep="\t", index=False), "seqkit_stats_raw.tsv", config.output_path)
         motif_counts = count_motifs(file_paths)
         result = pd.merge(read_counts, motif_counts, on="file")
 
