@@ -100,17 +100,15 @@ python demultiplex-scripts/src/motif_counts.py \
     >"$INPUT_DIR/motif_counts.tsv"
 
 echo "(6/10) Demultiplexing"
-DEMUX_CMD="python demultiplex-scripts/src/demultiplex.py \
-    \"$FASTQ1\" \
-    \"$FASTQ2\" \
-    \"$DEMUX_PATH/work/barcodes_fwd.fasta\" \
-    \"$DEMUX_PATH/work/barcodes_rev.fasta\" \
-    -o \"$DEMUX_PATH/work\" \
+python demultiplex-scripts/src/demultiplex.py \
+    "$FASTQ1" \
+    "$FASTQ2" \
+    "$DEMUX_PATH/work/barcodes_fwd.fasta" \
+    "$DEMUX_PATH/work/barcodes_rev.fasta" \
+    -o "$DEMUX_PATH/work" \
     -c \
-    -e ${ERROR_RATE} \
-    --min-overlap ${MIN_OVERLAP}"
-
-eval $DEMUX_CMD
+    -e "${ERROR_RATE}" \
+    --min-overlap "${MIN_OVERLAP}"
 
 echo "(7/10) Copying patterns"
 python demultiplex-scripts/src/patterns_copy.py -o "$DEMUX_PATH/demux_renamed" <"$DEMUX_PATH/work/patterns.txt"
