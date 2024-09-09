@@ -47,13 +47,15 @@ def main() -> None:
         type=Path,
     )
 
+    args = parser.parse_args()
+
     try:
         file_paths = parse_input_path(args.input_path)
         read_counts = count_reads(file_paths, multiprocessing.cpu_count())
         write_output(
             read_counts.to_csv(sep="\t", index=False),
             "seqkit_stats.tsv",
-            args.output_path,
+            args.output,
         )
         print(read_counts.to_string(index=False))
 
