@@ -1,5 +1,4 @@
 import argparse
-import io
 import multiprocessing
 import subprocess
 from dataclasses import dataclass
@@ -7,7 +6,8 @@ from pathlib import Path
 
 import pandas as pd
 
-from file_utils import parse_input_path
+from file_utils import parse_input_path, run_command
+from count_reads_path import count_reads
 
 
 @dataclass
@@ -21,27 +21,6 @@ class Config:
 
 
 config: Config
-
-
-def count_reads(file_paths: list[Path]) -> pd.DataFrame:
-    """
-    Count reads in FASTA/FASTQ files using seqkit stats.
-
-    Args:
-        file_paths (list[str]): List of file paths to process
-
-    Returns:
-        pd.DataFrame: DataFrame containing the file and num_seqs columns from seqkit stats output
-    """
-    file_paths_str = " ".join(str(path) for path in file_paths)
-    command = f"seqkit stats {file_paths_str} -T --quiet -j {config.cpu_count}"
-
-    output = run_command(command)
-    write_output(output, "seqkit_stats_raw.tsv")
-
-    df = pd.read_csv(io.StringIO(output), sep="\t")
-    df = df[["file", "num_seqs"]]
-    return df
 
 
 def get_patterns() -> tuple[dict[str, str], dict[str, str]]:
@@ -232,7 +211,8 @@ def main() -> None:
 
     try:
         file_paths = parse_input_path(input_path)
-        read_counts = count_reads(file_paths)
+        read_counts = count_reads(file_paths, config.cpu_count)
+        write_output(read_counts.to_csv(sep="\t", index=False), "seqkit_stats_raw.tsv")
         motif_counts = count_motifs(file_paths)
         result = pd.merge(read_counts, motif_counts, on="file")
 
