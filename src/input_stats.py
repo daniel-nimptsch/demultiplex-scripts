@@ -102,20 +102,26 @@ def count_reads(file_paths: list[str]) -> pd.DataFrame:
 
 
 def get_patterns() -> tuple[dict[str, str], dict[str, str]]:
-    barcode_command = f"seqkit seq -n {config.barcode_path} -j {config.cpu_count}"
-    primer_command = f"seqkit seq -n {config.primer_path} -j {config.cpu_count}"
+    """
+    Retrieve barcode and primer patterns from the specified files.
 
-    barcode_names = run_command(barcode_command).splitlines()
-    primer_names = run_command(primer_command).splitlines()
+    Returns:
+        tuple[dict[str, str], dict[str, str]]: A tuple containing two dictionaries:
+            1. Barcode patterns (key: name, value: sequence)
+            2. Primer patterns (key: name, value: sequence)
+    """
+    def get_pattern_dict(file_path: str) -> dict[str, str]:
+        name_command = f"seqkit seq -n {file_path} -j {config.cpu_count}"
+        seq_command = f"seqkit seq -s {file_path} -j {config.cpu_count}"
+        
+        names = run_command(name_command).splitlines()
+        seqs = run_command(seq_command).splitlines()
+        
+        return dict(zip(names, seqs))
 
-    barcode_command = f"seqkit seq -s {config.barcode_path} -j {config.cpu_count}"
-    primer_command = f"seqkit seq -s {config.primer_path} -j {config.cpu_count}"
-
-    barcode_seqs = run_command(barcode_command).splitlines()
-    primer_seqs = run_command(primer_command).splitlines()
-
-    barcode_patterns = {line.split()[0]: line.split()[1] for line in barcode_output}
-    primer_patterns = {line.split()[0]: line.split()[1] for line in primer_output}
+    barcode_patterns = get_pattern_dict(config.barcode_path)
+    primer_patterns = get_pattern_dict(config.primer_path)
+    
     return barcode_patterns, primer_patterns
 
 
