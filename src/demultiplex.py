@@ -60,20 +60,24 @@ def main():
             """
         )
     )
-    parser.add_argument("fq_gz_1", type=str, help="Path to the first FASTQ file (R1)")
-    parser.add_argument("fq_gz_2", type=str, help="Path to the second FASTQ file (R2)")
-    parser.add_argument(
+    _ = parser.add_argument(
+        "fq_gz_1", type=str, help="Path to the first FASTQ file (R1)"
+    )
+    _ = parser.add_argument(
+        "fq_gz_2", type=str, help="Path to the second FASTQ file (R2)"
+    )
+    _ = parser.add_argument(
         "forward_fasta",
         type=str,
         help="Path to the forward FASTA file containing barcodes",
     )
-    parser.add_argument(
+    _ = parser.add_argument(
         "reverse_fasta",
         type=str,
         help="Path to the reverse FASTA file containing barcodes",
     )
 
-    parser.add_argument(
+    _ = parser.add_argument(
         "-o",
         "--output",
         type=str,
@@ -81,7 +85,7 @@ def main():
         help="Directory to save the output demultiplexed FASTQ files (default: ./)",
     )
 
-    parser.add_argument(
+    _ = parser.add_argument(
         "-c",
         "--combinatorial",
         action="store_true",
