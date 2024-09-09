@@ -44,8 +44,7 @@ def main() -> None:
     _ = parser.add_argument(
         "-o",
         "--output",
-        default=Path("./"),
-        help="Output directory path. Default is current directory.",
+        help="Output directory path. If not specified, input path will be used.",
         type=Path,
     )
 
@@ -54,10 +53,11 @@ def main() -> None:
     try:
         file_paths = parse_input_path(args.input_path)
         read_counts = count_reads(file_paths, multiprocessing.cpu_count())
+        output_path = args.output if args.output else args.input_path
         write_output(
             read_counts.to_csv(sep="\t", index=False, line_terminator="\n"),
             "seqkit_stats.tsv",
-            args.output,
+            output_path,
         )
         print(read_counts.to_string(index=False))
 
