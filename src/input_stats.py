@@ -4,17 +4,13 @@ import multiprocessing
 import os
 import re
 import subprocess
-from typing import Dict, List, Set, Tuple
 
 import pandas as pd
 
-BARCODE_PATH: str = ""
-PRIMER_PATH: str = ""
-VERBOSE: bool = False
 CPU_COUNT: int = multiprocessing.cpu_count()
 
 
-def parse_input_path(input_path: str) -> List[str]:
+def parse_input_path(input_path: str) -> list[str]:
     """
     Parse files in the input path, ensure they are paired-end, and return their file paths.
 
@@ -69,7 +65,7 @@ def parse_input_path(input_path: str) -> List[str]:
     return file_list
 
 
-def count_reads(file_paths: List[str]) -> pd.DataFrame:
+def count_reads(file_paths: list[str]) -> pd.DataFrame:
     """
     Count reads and get average sequence length in FASTA/FASTQ files using seqkit stats.
 
@@ -94,7 +90,7 @@ def count_reads(file_paths: List[str]) -> pd.DataFrame:
     return df
 
 
-def get_patterns() -> Tuple[Set[str], Set[str]]:
+def get_patterns() -> tuple[set[str], set[str]]:
     barcode_command = f"seqkit seq -n {BARCODE_PATH} -j {CPU_COUNT}"
     primer_command = f"seqkit seq -n {PRIMER_PATH} -j {CPU_COUNT}"
 
@@ -103,14 +99,14 @@ def get_patterns() -> Tuple[Set[str], Set[str]]:
     return barcode_patterns, primer_patterns
 
 
-def empty_pattern_df(patterns: Set[str]) -> pd.DataFrame:
+def empty_pattern_df(patterns: set[str], file_paths: list[str]) -> pd.DataFrame:
     df = pd.DataFrame({"file": file_paths})
     for pattern in patterns:
         df[pattern] = 0
     return df
 
 
-def count_motifs(file_paths: List[str]) -> pd.DataFrame:
+def count_motifs(file_paths: list[str]) -> pd.DataFrame:
     """
     Count motifs in the input files using seqkit fish for adapterd and locate for primers.
 
@@ -123,7 +119,7 @@ def count_motifs(file_paths: List[str]) -> pd.DataFrame:
 
     barcode_patterns, primer_patterns = get_patterns()
     all_patterns = barcode_patterns.union(primer_patterns)
-    df = empty_pattern_df(all_patterns)
+    df = empty_pattern_df(all_patterns, file_paths)
 
     for fasta in file_paths:
         # -d allow degenerate bases, -i case insensitive
@@ -148,7 +144,7 @@ def count_motifs(file_paths: List[str]) -> pd.DataFrame:
     return df
 
 
-def parse_seqkit_locate(output: List[str]) -> Dict[str, int]:
+def parse_seqkit_locate(output: list[str]) -> dict[str, int]:
     """
     Parse the output of seqkit locate command.
 
@@ -196,40 +192,46 @@ def main() -> None:
         description="Count reads in input FASTA/FASTQ files and the subset of reads with a specific adapter or primer sequences."
     )
     _ = parser.add_argument(
-        "input_path", help="Path to the directory containing FASTA/FASTQ files"
+        "input_path",
+        help="Path to the directory containing FASTA/FASTQ files",
+        type=str,
     )
-    _ = parser.add_argument("barcode", help="Path to the barcode FASTA file")
-    _ = parser.add_argument("primer", help="Path to the primer FASTA file")
+    _ = parser.add_argument("barcode", help="Path to the barcode FASTA file", type=str)
+    _ = parser.add_argument("primer", help="Path to the primer FASTA file", type=str)
     _ = parser.add_argument(
         "-o",
         "--output",
         default=None,
         help="Output TSV file path. If not specified, output will be printed to stdout.",
+        type=str,
     )
     _ = parser.add_argument(
         "-v",
         "--verbose",
         action="store_true",
         help="Print seqkit commands and their outputs",
+        type=str,
     )
 
     args = parser.parse_args()
+    input_path = str(args.input_path)
+    output = str(args.output)
 
     global BARCODE_PATH, PRIMER_PATH, VERBOSE
-    BARCODE_PATH = args.barcode
-    PRIMER_PATH = args.primer
-    VERBOSE = args.verbose
+    BARCODE_PATH: str = args.barcode
+    PRIMER_PATH: str = args.primer
+    VERBOSE: bool = args.verbose
 
     try:
-        file_paths = parse_input_path(args.input_path)
+        file_paths = parse_input_path(input_path)
 
         read_counts = count_reads(file_paths)
         motif_counts = count_motifs(file_paths)
 
         result = pd.merge(read_counts, motif_counts, on="file")
 
-        if args.output:
-            result.to_csv(args.output, sep="\t", index=False)
+        if output:
+            result.to_csv(output, sep="\t", index=False)
         else:
             print(result.to_string(index=False))
 
