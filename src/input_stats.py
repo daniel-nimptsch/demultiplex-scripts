@@ -7,7 +7,7 @@ from pathlib import Path
 
 import pandas as pd
 
-from .file_utils import parse_input_path
+from file_utils import parse_input_path
 
 
 @dataclass
