@@ -37,6 +37,7 @@ def main() -> None:
         description="Count reads in a directory of input FASTA/FASTQ files using seqkit stats. "
         "The results are printed to stdout. If an output path is specified, "
         "the results are also stored as a TSV file in the specified output path. "
+        "The raw seqkit stats output is always saved as 'seqkit_stats.tsv' in the input directory. "
         "Use -h or --help to show this help message and exit."
     )
     _ = parser.add_argument(
