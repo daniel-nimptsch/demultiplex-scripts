@@ -1,3 +1,4 @@
 .aider*
 data
 docs
+__pycache__
