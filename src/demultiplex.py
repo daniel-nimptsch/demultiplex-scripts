@@ -16,17 +16,27 @@ def run_command(command, output_dir):
 
 
 def run_cutadapt(
-    forward_fasta,
-    reverse_fasta,
-    fq_gz_1,
-    fq_gz_2,
-    combinatorial,
-    output_dir,
-    error_rate,
-    min_overlap,
+    forward_fasta: str,
+    reverse_fasta: str,
+    fq_gz_1: str,
+    fq_gz_2: str,
+    combinatorial: bool,
+    output_dir: str,
+    error_rate: float | None,
+    min_overlap: int | None,
 ):
     """
     Execute the cutadapt command with the given parameters.
+
+    Args:
+        forward_fasta (str): Path to the forward FASTA file containing barcodes.
+        reverse_fasta (str): Path to the reverse FASTA file containing barcodes.
+        fq_gz_1 (str): Path to the first FASTQ file (R1).
+        fq_gz_2 (str): Path to the second FASTQ file (R2).
+        combinatorial (bool): Whether to use combinatorial dual indexes for demultiplexing.
+        output_dir (str): Directory to save the output demultiplexed FASTQ files.
+        error_rate (float | None): Maximum expected error rate (default: 0.14).
+        min_overlap (int | None): Minimum overlap length for adapter matching (default: 3).
     """
     error_rate_param = error_rate if error_rate is not None else "0.14"
     min_overlap_param = min_overlap if min_overlap is not None else "3"
