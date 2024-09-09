@@ -119,48 +119,44 @@ def get_patterns() -> tuple[dict[str, str], dict[str, str]]:
     return barcode_patterns, primer_patterns
 
 
+def empty_pattern_df(patterns: dict[str, str], file_paths: list[Path]) -> pd.DataFrame:
+    df = pd.DataFrame({"file": [str(path) for path in file_paths]})
+    for pattern in patterns.keys():
+        df[pattern] = 0
+    return df
+
+def run_seqkit_locate(fasta: Path, patterns: dict[str, str], is_primer: bool) -> str:
+    if is_primer:
+        command = f"seqkit locate {fasta} -di -f {config.primer_path} -j {config.cpu_count}"
+    else:
+        patterns_str = ",".join(f"^{seq}" for seq in patterns.values())
+        command = f"seqkit locate {fasta} -di -p {patterns_str} -j {config.cpu_count}"
+    return run_command(command)
+
+def write_output(output: str, filename: str) -> None:
+    with open(config.output_path / filename, "w") as f:
+        _ = f.write(output)
+
 def count_motifs(file_paths: list[Path]) -> pd.DataFrame:
     """
     Count motifs in the input files using seqkit locate for both barcodes and primers.
 
     Args:
-        file_paths (list[str]): List of file paths to process
+        file_paths (list[Path]): List of file paths to process
 
     Returns:
         pd.DataFrame: DataFrame with rows for file paths and columns for motif counts
     """
-
-    def empty_pattern_df(
-        patterns: dict[str, str], file_paths: list[Path]
-    ) -> pd.DataFrame:
-        df = pd.DataFrame({"file": [str(path) for path in file_paths]})
-        for pattern in patterns.keys():
-            df[pattern] = 0
-        return df
-
     barcode_patterns, primer_patterns = get_patterns()
     all_patterns = {**barcode_patterns, **primer_patterns}
     df = empty_pattern_df(all_patterns, file_paths)
 
     for fasta in file_paths:
-        # -d allow degenerate bases, -i case insensitive
-        barcode_patterns_str = ",".join(f"^{seq}" for seq in barcode_patterns.values())
+        barcode_output = run_seqkit_locate(fasta, barcode_patterns, is_primer=False)
+        primer_output = run_seqkit_locate(fasta, primer_patterns, is_primer=True)
 
-        barcode_command = (
-            f"seqkit locate {fasta} -di -p {barcode_patterns_str} -j {config.cpu_count}"
-        )
-        primer_command = (
-            f"seqkit locate {fasta} -di -f {config.primer_path} -j {config.cpu_count}"
-        )
-
-        barcode_output = run_command(barcode_command)
-        primer_output = run_command(primer_command)
-
-        # Write raw outputs to files
-        with open(config.output_path / "barcode_locate.tsv", "w") as f:
-            _ = f.write(barcode_output)
-        with open(config.output_path / "primer_locate.tsv", "w") as f:
-            _ = f.write(primer_output)
+        write_output(barcode_output, "barcode_locate.tsv")
+        write_output(primer_output, "primer_locate.tsv")
 
         barcode_counts = parse_seqkit_locate(
             barcode_output.strip().split("\n"),
@@ -172,7 +168,7 @@ def count_motifs(file_paths: list[Path]) -> pd.DataFrame:
         )
 
         for pattern, count in {**barcode_counts, **primer_counts}.items():
-            df.loc[df["file"] == fasta, pattern] = count
+            df.loc[df["file"] == str(fasta), pattern] = count
 
     return df
 
