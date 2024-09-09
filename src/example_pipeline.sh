@@ -1,16 +1,14 @@
 #!/bin/bash
 
+# Set default values
+DEMUX_PATH="./data/demultiplex"
+ERROR_RATE=0.14
+MIN_OVERLAP=3
+NOVOGENE_SAMPLESHEET=false
+
 # Parse command-line arguments
 while [[ $# -gt 0 ]]; do
     case $1 in
-        -1|--fastq1)
-            FASTQ1="$2"
-            shift 2
-            ;;
-        -2|--fastq2)
-            FASTQ2="$2"
-            shift 2
-            ;;
         -o|--output)
             DEMUX_PATH="$2"
             shift 2
@@ -28,15 +26,24 @@ while [[ $# -gt 0 ]]; do
             shift
             ;;
         *)
-            INPUT_SAMPLESHEET="$1"
+            if [ -z "$INPUT_SAMPLESHEET" ]; then
+                INPUT_SAMPLESHEET="$1"
+            elif [ -z "$FASTQ1" ]; then
+                FASTQ1="$1"
+            elif [ -z "$FASTQ2" ]; then
+                FASTQ2="$1"
+            else
+                echo "Error: Unexpected argument '$1'"
+                exit 1
+            fi
             shift
             ;;
     esac
 done
 
 # Check for required arguments
-if [ -z "$FASTQ1" ] || [ -z "$FASTQ2" ] || [ -z "$DEMUX_PATH" ] || [ -z "$INPUT_SAMPLESHEET" ]; then
-    echo "Usage: $0 <input_samplesheet> -1 <fastq1> -2 <fastq2> -o <output_dir> [-e <error_rate>] [--min-overlap <min_overlap>] [--novogene-samplesheet]"
+if [ -z "$INPUT_SAMPLESHEET" ] || [ -z "$FASTQ1" ] || [ -z "$FASTQ2" ]; then
+    echo "Usage: $0 <input_samplesheet> <fastq1> <fastq2> [-o <output_dir>] [-e <error_rate>] [--min-overlap <min_overlap>] [--novogene-samplesheet]"
     exit 1
 fi
 
