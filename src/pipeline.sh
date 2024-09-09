@@ -6,8 +6,18 @@ display_help() {
     echo
     echo "Description:"
     echo "  This pipeline performs demultiplexing and analysis of paired-end sequencing data."
-    echo "  It processes the input samplesheet, generates barcodes, counts motifs, demultiplexes"
-    echo "  the data, and generates various output files including read counts and an Ampliseq samplesheet."
+    echo "  The process includes:"
+    echo "  1. Parsing the Novogene samplesheet to the default INPUT_SAMPLESHEET format (tab-delimited)."
+    echo "  2. Creating barcode and primer FASTA files for demultiplexing and motif counting."
+    echo "  3. Generating a pattern file for copying demultiplexed FASTQs."
+    echo "  4. Counting reads in the input FASTQ files."
+    echo "  5. Counting motifs using seqkit."
+    echo "  6. Demultiplexing with cutadapt (default: combinatorial dual indices, min overlap 3, max error rate 0.14)."
+    echo "  7. Copying demultiplexed FASTQs according to the pattern file."
+    echo "  8. Tracking reads for both output and intermediary demultiplexed FASTQs."
+    echo "  9. Creating an Ampliseq-compatible samplesheet for further processing."
+    echo
+    echo "  Note: Default demultiplexing parameters are set for barcodes of length 7. Adjust as needed."
     echo
     echo "Arguments:"
     echo "  <input_samplesheet>    Path to the input samplesheet"
