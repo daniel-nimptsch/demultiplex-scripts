@@ -3,7 +3,7 @@ import os
 import subprocess
 
 
-def run_command(command, output_dir):
+def run_command(command: str, output_dir: str) -> None:
     log_file = os.path.join(output_dir, "cutadapt.log")
     with open(log_file, "w") as log:
         process = subprocess.Popen(
