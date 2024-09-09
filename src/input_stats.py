@@ -104,12 +104,12 @@ def count_motifs(file_paths: list[Path]) -> pd.DataFrame:
     df = empty_pattern_df(all_patterns, file_paths)
 
     for fasta in file_paths:
-        fasta_name = fasta.stem  # Get filename without extension
+        fasta_name = fasta.stem
         barcode_output = run_seqkit_locate(fasta, barcode_patterns, is_primer=False)
         primer_output = run_seqkit_locate(fasta, primer_patterns, is_primer=True)
 
-        write_output(barcode_output, f"{fasta_name}_barcode_locate.tsv")
-        write_output(primer_output, f"{fasta_name}_primer_locate.tsv")
+        write_output(barcode_output, f"{fasta_name}_barcode_stats.tsv")
+        write_output(primer_output, f"{fasta_name}_primer_stats.tsv")
 
         barcode_counts = parse_seqkit_locate(
             barcode_output.strip().split("\n"),
