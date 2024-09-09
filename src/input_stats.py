@@ -164,7 +164,9 @@ def count_motifs(file_paths: list[str]) -> pd.DataFrame:
             _ = f.write(primer_output)
 
         barcode_counts = parse_seqkit_locate(
-            barcode_output.strip().split("\n"), barcode_patterns, use_pattern_names=False
+            barcode_output.strip().split("\n"),
+            barcode_patterns,
+            use_pattern_names=False,
         )
         primer_counts = parse_seqkit_locate(
             primer_output.strip().split("\n"), primer_patterns, use_pattern_names=True
@@ -176,7 +178,9 @@ def count_motifs(file_paths: list[str]) -> pd.DataFrame:
     return df
 
 
-def parse_seqkit_locate(output: list[str], patterns: dict[str, str], use_pattern_names: bool = False) -> dict[str, int]:
+def parse_seqkit_locate(
+    output: list[str], patterns: dict[str, str], use_pattern_names: bool = False
+) -> dict[str, int]:
     """
     Parse the output of seqkit locate command.
 
@@ -189,12 +193,10 @@ def parse_seqkit_locate(output: list[str], patterns: dict[str, str], use_pattern
         dict[str, int]: Dictionary with pattern names as keys and their counts as values
     """
     pattern_counts = {name: 0 for name in patterns}
-    
+
     if use_pattern_names:
-        # When using -f flag, we search for pattern names
         search_dict = {name: name for name in patterns}
     else:
-        # When using -p flag, we search for pattern sequences
         search_dict = {seq: name for name, seq in patterns.items()}
 
     for line in output[1:]:  # Skip the header line
