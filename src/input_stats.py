@@ -4,11 +4,19 @@ import multiprocessing
 import os
 import re
 import subprocess
+from dataclasses import dataclass
 
 import pandas as pd
 
-CPU_COUNT: int = multiprocessing.cpu_count()
+@dataclass
+class Config:
+    barcode_path: str
+    primer_path: str
+    verbose: bool
+    cpu_count: int = multiprocessing.cpu_count()
 
+# Global configuration object
+config: Config
 
 def parse_input_path(input_path: str) -> list[str]:
     """
@@ -76,7 +84,7 @@ def count_reads(file_paths: list[str]) -> pd.DataFrame:
         pd.DataFrame: DataFrame containing the file, num_seqs, and avg_len columns from seqkit stats output
     """
     file_paths_str = " ".join(file_paths)
-    command = f"seqkit stats {file_paths_str} -T --quiet -j {CPU_COUNT}"
+    command = f"seqkit stats {file_paths_str} -T --quiet -j {config.cpu_count}"
 
     output = run_command(command)
 
@@ -91,11 +99,11 @@ def count_reads(file_paths: list[str]) -> pd.DataFrame:
 
 
 def get_patterns() -> tuple[set[str], set[str]]:
-    barcode_command = f"seqkit seq -n {BARCODE_PATH} -j {CPU_COUNT}"
-    primer_command = f"seqkit seq -n {PRIMER_PATH} -j {CPU_COUNT}"
+    barcode_command = f"seqkit seq -n {config.barcode_path} -j {config.cpu_count}"
+    primer_command = f"seqkit seq -n {config.primer_path} -j {config.cpu_count}"
 
-    barcode_patterns = set(run_command(barcode_command))
-    primer_patterns = set(run_command(primer_command))
+    barcode_patterns = set(run_command(barcode_command).splitlines())
+    primer_patterns = set(run_command(primer_command).splitlines())
     return barcode_patterns, primer_patterns
 
 
@@ -123,8 +131,8 @@ def count_motifs(file_paths: list[str]) -> pd.DataFrame:
 
     for fasta in file_paths:
         # -d allow degenerate bases, -i case insensitive
-        barcode_command = f"seqkit locate {fasta} -di -f {BARCODE_PATH} -j {CPU_COUNT}"
-        primer_command = f"seqkit locate {fasta} -di -f {PRIMER_PATH} -j {CPU_COUNT}"
+        barcode_command = f"seqkit locate {fasta} -di -f {config.barcode_path} -j {config.cpu_count}"
+        primer_command = f"seqkit locate {fasta} -di -f {config.primer_path} -j {config.cpu_count}"
 
         barcode_output = run_command(barcode_command)
         # primer_output = run_command(primer_command)
@@ -177,7 +185,7 @@ def run_command(command: str) -> str:
         subprocess.CalledProcessError: If the command execution fails.
     """
     try:
-        if VERBOSE:
+        if config.verbose:
             print(command)
         result = subprocess.run(
             command, shell=True, check=True, capture_output=True, text=True
@@ -210,17 +218,18 @@ def main() -> None:
         "--verbose",
         action="store_true",
         help="Print seqkit commands and their outputs",
-        type=str,
     )
 
     args = parser.parse_args()
     input_path = str(args.input_path)
     output = str(args.output)
 
-    global BARCODE_PATH, PRIMER_PATH, VERBOSE
-    BARCODE_PATH: str = args.barcode
-    PRIMER_PATH: str = args.primer
-    VERBOSE: bool = args.verbose
+    global config
+    config = Config(
+        barcode_path=args.barcode,
+        primer_path=args.primer,
+        verbose=args.verbose
+    )
 
     try:
         file_paths = parse_input_path(input_path)
