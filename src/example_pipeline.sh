@@ -1,13 +1,43 @@
 #!/bin/bash
 
+# Function to display help message
+display_help() {
+    echo "Usage: $0 <input_samplesheet> <fastq1> <fastq2> [options]"
+    echo
+    echo "Description:"
+    echo "  This pipeline performs demultiplexing and analysis of paired-end sequencing data."
+    echo "  It processes the input samplesheet, generates barcodes, counts motifs, demultiplexes"
+    echo "  the data, and generates various output files including read counts and an Ampliseq samplesheet."
+    echo
+    echo "Arguments:"
+    echo "  <input_samplesheet>    Path to the input samplesheet"
+    echo "  <fastq1>               Path to the first FASTQ file (R1)"
+    echo "  <fastq2>               Path to the second FASTQ file (R2)"
+    echo
+    echo "Options:"
+    echo "  -o, --output <dir>     Output directory for demultiplexed files (default: ./data/demultiplex)"
+    echo "  -e, --error-rate <rate> Maximum expected error rate (default: 0.14)"
+    echo "  --min-overlap <int>    Minimum overlap length for adapter matching (default: 3)"
+    echo "  --novogene-samplesheet Use this flag if the input is a Novogene samplesheet"
+    echo "  -h, --help             Display this help message and exit"
+    echo
+    echo "Example:"
+    echo "  $0 input_samplesheet.tsv R1.fastq.gz R2.fastq.gz -o output_dir -e 0.1 --min-overlap 5"
+}
+
 # Set default values
 DEMUX_PATH="./data/demultiplex"
 ERROR_RATE=0.14
 MIN_OVERLAP=3
 NOVOGENE_SAMPLESHEET=false
 
+# Parse command-line arguments
 while [[ $# -gt 0 ]]; do
     case $1 in
+    -h | --help)
+        display_help
+        exit 0
+        ;;
     -o | --output)
         DEMUX_PATH="$2"
         shift 2
@@ -33,6 +63,7 @@ while [[ $# -gt 0 ]]; do
             FASTQ2="$1"
         else
             echo "Error: Unexpected argument '$1'"
+            echo "Use -h or --help for usage information"
             exit 1
         fi
         shift
@@ -40,8 +71,10 @@ while [[ $# -gt 0 ]]; do
     esac
 done
 
+# Check if required arguments are provided
 if [ -z "$INPUT_SAMPLESHEET" ] || [ -z "$FASTQ1" ] || [ -z "$FASTQ2" ]; then
-    echo "Usage: $0 <input_samplesheet> <fastq1> <fastq2> [-o <output_dir>] [-e <error_rate>] [--min-overlap <min_overlap>] [--novogene-samplesheet]"
+    echo "Error: Missing required arguments"
+    echo "Use -h or --help for usage information"
     exit 1
 fi
 
