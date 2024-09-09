@@ -30,7 +30,7 @@ def parse_input_path(input_path: Path) -> list[Path]:
         input_path (Path): Path to the directory containing FASTA/FASTQ files
 
     Returns:
-        list[Path]: List of file paths for valid paired-end FASTA/FASTQ files
+        list[Path]: List of Path objects for valid paired-end FASTA/FASTQ files
 
     Raises:
         ValueError: If no valid files are found, file endings are not identical, not in accepted formats, or not paired-end
