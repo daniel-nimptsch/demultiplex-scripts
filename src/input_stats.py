@@ -1,14 +1,13 @@
 import argparse
 import multiprocessing
-import subprocess
 from dataclasses import dataclass
 from pathlib import Path
 
 import pandas as pd
 
-from file_utils import parse_input_path
-from count_reads_path import count_reads
 from command_utils import run_command
+from count_reads_path import count_reads
+from file_utils import parse_input_path
 
 
 @dataclass
@@ -69,6 +68,40 @@ def write_output(output: str, filename: str) -> None:
         _ = f.write(output)
 
 
+def parse_seqkit_locate(
+    output: list[str], patterns: dict[str, str], use_pattern_names: bool = False
+) -> dict[str, int]:
+    """
+    Parse the output of seqkit locate command.
+
+    Args:
+        output (list[str]): List of output lines from seqkit locate
+        patterns (dict[str, str]): Dictionary of pattern names and their sequences
+        use_pattern_names (bool): If True, search for pattern names instead of sequences (for -f flag)
+
+    Returns:
+        dict[str, int]: Dictionary with pattern names as keys and their counts as values
+    """
+    pattern_counts = {name: 0 for name in patterns}
+
+    if use_pattern_names:
+        search_dict = {name: name for name in patterns}
+    else:
+        search_dict = {seq.lstrip("^"): name for name, seq in patterns.items()}
+
+    for line in output[1:]:
+        try:
+            _, pattern, *_ = line.split("\t")
+            pattern = pattern.lstrip("^") if not use_pattern_names else pattern
+            if pattern in search_dict:
+                pattern_name = search_dict[pattern]
+                pattern_counts[pattern_name] += 1
+        except ValueError:
+            continue
+
+    return pattern_counts
+
+
 def count_motifs(file_paths: list[Path]) -> pd.DataFrame:
     """
     Count motifs in the input files using seqkit locate for both barcodes and primers.
@@ -104,41 +137,6 @@ def count_motifs(file_paths: list[Path]) -> pd.DataFrame:
             df.loc[df["file"] == str(fasta), pattern] = count
 
     return df
-
-
-def parse_seqkit_locate(
-    output: list[str], patterns: dict[str, str], use_pattern_names: bool = False
-) -> dict[str, int]:
-    """
-    Parse the output of seqkit locate command.
-
-    Args:
-        output (list[str]): List of output lines from seqkit locate
-        patterns (dict[str, str]): Dictionary of pattern names and their sequences
-        use_pattern_names (bool): If True, search for pattern names instead of sequences (for -f flag)
-
-    Returns:
-        dict[str, int]: Dictionary with pattern names as keys and their counts as values
-    """
-    pattern_counts = {name: 0 for name in patterns}
-
-    if use_pattern_names:
-        search_dict = {name: name for name in patterns}
-    else:
-        search_dict = {seq.lstrip("^"): name for name, seq in patterns.items()}
-
-    for line in output[1:]:
-        try:
-            _, pattern, *_ = line.split("\t")
-            pattern = pattern.lstrip("^") if not use_pattern_names else pattern
-            if pattern in search_dict:
-                pattern_name = search_dict[pattern]
-                pattern_counts[pattern_name] += 1
-        except ValueError:
-            continue
-
-    return pattern_counts
-
 
 
 def main() -> None:
