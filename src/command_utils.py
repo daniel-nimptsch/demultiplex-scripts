@@ -1,5 +1,5 @@
 import subprocess
-from typing import Optional
+
 
 def run_command(command: str, verbose: bool = False) -> str:
     """
