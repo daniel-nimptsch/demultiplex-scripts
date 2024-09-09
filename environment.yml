@@ -1,0 +1,14 @@
+name: demultiplex-scripts
+channels:
+  - conda-forge
+  - bioconda
+  - defaults
+dependencies:
+  - cutadapt
+  - python
+  - seqkit
+  - ca-certificates
+  - openssl
+  - pandas
+  - biopython
+prefix: /home/soye/.mambaforge/envs/demultiplex-scripts
