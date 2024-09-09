@@ -24,9 +24,9 @@ python demultiplex-scripts/src/barcodes_to_fasta.py -o "$DEMUX_PATH/work/" \
     <"$DEMUX_PATH/input_samplesheet.tsv"
 
 echo "(4/10) Concatenating barcodes and primers"
-cat "$DEMUX_PATH/barcodes_fwd.fasta" "$DEMUX_PATH/work/barcodes_rev.fasta" \
+cat "$DEMUX_PATH/work/barcodes_fwd.fasta" "$DEMUX_PATH/work/barcodes_rev.fasta" \
     >"$DEMUX_PATH/work/barcodes.fasta"
-cat "$DEMUX_PATH/primers_fwd.fasta" "$DEMUX_PATH/work/primers_rev.fasta" \
+cat "$DEMUX_PATH/work/primers_fwd.fasta" "$DEMUX_PATH/work/primers_rev.fasta" \
     >"$DEMUX_PATH/work/primers.fasta"
 
 echo "(5/10) Counting motifs"
@@ -43,7 +43,7 @@ python demultiplex-scripts/src/demultiplex.py \
     "$FASTQ2" \
     "$DEMUX_PATH/work/barcodes_fwd.fasta" \
     "$DEMUX_PATH/work/barcodes_rev.fasta" \
-    -o "$DEMUX_PATH" \
+    -o "$DEMUX_PATH/work" \
     -c
 
 echo "(7/10) Copying patterns"
@@ -51,7 +51,7 @@ python demultiplex-scripts/src/patterns_copy.py -o "$DEMUX_PATH/demux_renamed" <
 
 echo "(8/10) Moving fastq files"
 mkdir -p "$DEMUX_PATH/work/fastqs/"
-mv "$DEMUX_PATH"/*.fastq.gz "$DEMUX_PATH/work/fastqs/"
+mv "$DEMUX_PATH"/work/*.fastq.gz "$DEMUX_PATH/work/fastqs/"
 
 echo "(9/10) Counting reads in demultiplexed data"
 python demultiplex-scripts/src/read_counts.py "$DEMUX_PATH/demux_renamed/" \
