@@ -5,16 +5,66 @@ cutadapt and to generate a sample sheet for nf-core/ampliseq.
 
 ## Usage
 
-Take a look at the example pipeline in `src/example_pipeline.sh`. This
-shows you how the scripts can be used in conjunction.
+The main pipeline script is `src/pipeline.sh`. Here's its usage information:
 
+```
+Usage: src/pipeline.sh <input_samplesheet> <fastq1> <fastq2> [options]
+
+Description:
+  This pipeline performs demultiplexing and analysis of paired-end sequencing data.
+  The process includes:
+  1. (Optional) Parsing the Novogene samplesheet to the default INPUT_SAMPLESHEET format (tab-delimited).
+     This step may be skipped if INPUT_SAMPLESHEET is already in the correct format:
+     sample_name<tab>forward_barcode<tab>reverse_barcode<tab>forward_barcode_name<tab>reverse_barcode_name<tab>forward_primer<tab>reverse_primer<tab>primer_name
+  2. Creating barcode and primer FASTA files for demultiplexing and motif counting,
+     and generating a pattern file for copying demultiplexed FASTQs.
+  3. Counting reads in the input FASTQ files.
+  4. Counting motifs using seqkit.
+  5. Demultiplexing with cutadapt (default: combinatorial dual indices, min overlap 3, max error rate 0.14).
+  6. Copying demultiplexed FASTQs according to the pattern file.
+  7. Tracking reads for both output and intermediary demultiplexed FASTQs.
+  8. Creating an Ampliseq-compatible samplesheet for further processing.
+
+  Note: Default demultiplexing parameters are set for barcodes of length 7. Adjust as needed.
+
+Outputs:
+  - Demultiplexed FASTQ files (stored in <output_dir>/demux_renamed/)
+  - Read count reports:
+    * For input FASTQs (stored in the input FASTQ directory)
+    * For demultiplexed FASTQs (stored in <output_dir>/demux_renamed/ and <output_dir>/work/fastqs/)
+  - Motif count report (stored in the input FASTQ directory)
+  - Ampliseq-compatible samplesheet (stored in <output_dir>/demux_renamed/)
+  - Intermediate files (barcodes, primers, patterns) (stored in <output_dir>/work/)
+
+Arguments:
+  <input_samplesheet>    Path to the input samplesheet
+  <fastq1>               Path to the first FASTQ file (R1)
+  <fastq2>               Path to the second FASTQ file (R2)
+
+Options:
+  -o, --output <dir>     Output directory for demultiplexed files (default: ./data/demultiplex)
+  -e, --error-rate <rate> Maximum expected error rate (default: 0.14)
+  --min-overlap <int>    Minimum overlap length for adapter matching (default: 3)
+  --novogene-samplesheet Use this flag if the input is a Novogene samplesheet
+  -c, --combinatorial    Use combinatorial dual indexes for demultiplexing
+  -h, --help             Display this help message and exit
+
+Example:
+  src/pipeline.sh input_samplesheet.tsv R1.fastq.gz R2.fastq.gz -o output_dir -e 0.1 --min-overlap 5 -c
+```
+
+## Individual Scripts
+
+The following scripts are used within the pipeline:
 
 ### src/read_counts.py
 
 ```
 usage: read_counts.py [-h] [-o OUTPUT] input_path
 
-Count reads in a dir of input FASTA/FASTQ files.
+Count reads in a directory of input FASTA/FASTQ files using seqkit stats. The
+results are stored as a TSV file in the specified output path. Use -h or
+--help to show this help message and exit.
 
 positional arguments:
   input_path            Path to the directory containing FASTA/FASTQ files

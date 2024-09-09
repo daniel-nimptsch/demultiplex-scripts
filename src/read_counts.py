@@ -56,20 +56,16 @@ def main() -> None:
     try:
         file_paths = parse_input_path(args.input_path)
         read_counts, raw_output = count_reads(file_paths, multiprocessing.cpu_count())
-        
-        # Print to stdout
-        print(read_counts.to_string(index=False))
-        
-        # Save raw command output to input_path as TSV
+
         write_output(raw_output, "seqkit_stats_raw.tsv", args.input_path)
-        
-        # Write processed output to file if output_path is set
         if args.output:
             write_output(
                 read_counts.to_csv(sep="\t", index=False, lineterminator="\n"),
                 "seqkit_stats.tsv",
                 args.output,
             )
+        else:
+            print(read_counts.to_string(index=False))
 
     except (ValueError, RuntimeError) as e:
         print(f"Error: {str(e)}")
