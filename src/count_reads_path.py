@@ -25,3 +25,38 @@ def count_reads(file_paths: list[Path], cpu_count: int) -> pd.DataFrame:
     df = pd.read_csv(io.StringIO(output), sep="\t")
     df = df[["file", "num_seqs"]]
     return df
+
+
+def main() -> None:
+    parser = argparse.ArgumentParser(
+        description="Count reads in a dir of input FASTA/FASTQ files."
+    )
+    _ = parser.add_argument(
+        "input_path",
+        help="Path to the directory containing FASTA/FASTQ files",
+        type=Path,
+    )
+    _ = parser.add_argument(
+        "-o",
+        "--output",
+        default=Path("./"),
+        help="Output directory path. Default is current directory.",
+        type=Path,
+    )
+
+    try:
+        file_paths = parse_input_path(args.input_path)
+        read_counts = count_reads(file_paths, multiprocessing.cpu_count())
+        write_output(
+            read_counts.to_csv(sep="\t", index=False),
+            "seqkit_stats.tsv",
+            args.output_path,
+        )
+        print(read_counts.to_string(index=False))
+
+    except (ValueError, RuntimeError) as e:
+        print(f"Error: {str(e)}")
+
+
+if __name__ == "__main__":
+    main()

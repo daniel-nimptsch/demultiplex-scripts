@@ -146,7 +146,7 @@ def count_motifs(file_paths: list[Path]) -> pd.DataFrame:
 
 def main() -> None:
     parser = argparse.ArgumentParser(
-        description="Count reads in input FASTA/FASTQ files and the subset of reads with a specific adapter or primer sequences."
+        description="Count subset of reads with specific adapter or primer sequences in input FASTA/FASTQ files."
     )
     _ = parser.add_argument(
         "input_path",
