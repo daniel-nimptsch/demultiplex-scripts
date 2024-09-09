@@ -1,9 +1,44 @@
 #!/bin/bash
 
-# Modify these variables
-FASTQ1="path/to/fastq1"
-FASTQ2="path/to/fastq1"
-DEMUX_PATH="path/to/output/dir"
+# Parse command-line arguments
+while [[ $# -gt 0 ]]; do
+    case $1 in
+        -1|--fastq1)
+            FASTQ1="$2"
+            shift 2
+            ;;
+        -2|--fastq2)
+            FASTQ2="$2"
+            shift 2
+            ;;
+        -o|--output)
+            DEMUX_PATH="$2"
+            shift 2
+            ;;
+        -e|--error-rate)
+            ERROR_RATE="$2"
+            shift 2
+            ;;
+        --min-overlap)
+            MIN_OVERLAP="$2"
+            shift 2
+            ;;
+        --novogene-samplesheet)
+            NOVOGENE_SAMPLESHEET=true
+            shift
+            ;;
+        *)
+            INPUT_SAMPLESHEET="$1"
+            shift
+            ;;
+    esac
+done
+
+# Check for required arguments
+if [ -z "$FASTQ1" ] || [ -z "$FASTQ2" ] || [ -z "$DEMUX_PATH" ] || [ -z "$INPUT_SAMPLESHEET" ]; then
+    echo "Usage: $0 <input_samplesheet> -1 <fastq1> -2 <fastq2> -o <output_dir> [-e <error_rate>] [--min-overlap <min_overlap>] [--novogene-samplesheet]"
+    exit 1
+fi
 
 # Demultiplex pipeline start:
 INPUT_DIR=$(dirname "$FASTQ1")
@@ -17,9 +52,13 @@ mkdir -p "$DEMUX_PATH"
 mkdir -p "$DEMUX_PATH/work"
 
 echo "(3/10) Parsing samplesheet and generating barcodes"
-python demultiplex-scripts/src/parse_samplesheet_novogene.py \
-    "$INPUT_DIR/multiplex_samplesheet.tsv" \
-    >"$DEMUX_PATH/input_samplesheet.tsv"
+if [ "$NOVOGENE_SAMPLESHEET" = true ]; then
+    python demultiplex-scripts/src/parse_samplesheet_novogene.py \
+        "$INPUT_SAMPLESHEET" \
+        >"$DEMUX_PATH/input_samplesheet.tsv"
+else
+    cp "$INPUT_SAMPLESHEET" "$DEMUX_PATH/input_samplesheet.tsv"
+fi
 python demultiplex-scripts/src/barcodes_to_fasta.py -o "$DEMUX_PATH/work/" \
     <"$DEMUX_PATH/input_samplesheet.tsv"
 
@@ -38,13 +77,23 @@ python demultiplex-scripts/src/motif_counts.py \
     >"$INPUT_DIR/motif_counts.tsv"
 
 echo "(6/10) Demultiplexing"
-python demultiplex-scripts/src/demultiplex.py \
-    "$FASTQ1" \
-    "$FASTQ2" \
-    "$DEMUX_PATH/work/barcodes_fwd.fasta" \
-    "$DEMUX_PATH/work/barcodes_rev.fasta" \
-    -o "$DEMUX_PATH/work" \
-    -c
+DEMUX_CMD="python demultiplex-scripts/src/demultiplex.py \
+    \"$FASTQ1\" \
+    \"$FASTQ2\" \
+    \"$DEMUX_PATH/work/barcodes_fwd.fasta\" \
+    \"$DEMUX_PATH/work/barcodes_rev.fasta\" \
+    -o \"$DEMUX_PATH/work\" \
+    -c"
+
+if [ -n "$ERROR_RATE" ]; then
+    DEMUX_CMD+=" -e $ERROR_RATE"
+fi
+
+if [ -n "$MIN_OVERLAP" ]; then
+    DEMUX_CMD+=" --min-overlap $MIN_OVERLAP"
+fi
+
+eval $DEMUX_CMD
 
 echo "(7/10) Copying patterns"
 python demultiplex-scripts/src/patterns_copy.py -o "$DEMUX_PATH/demux_renamed" <"$DEMUX_PATH/work/patterns.txt"
