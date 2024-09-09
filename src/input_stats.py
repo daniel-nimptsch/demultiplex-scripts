@@ -134,8 +134,9 @@ def count_motifs(file_paths: list[str]) -> pd.DataFrame:
 
     for fasta in file_paths:
         # -d allow degenerate bases, -i case insensitive
+        barcode_patterns_str = ",".join(f"^{pattern}" for pattern in barcode_patterns)
         barcode_command = (
-            f"seqkit locate {fasta} -di -f {config.barcode_path} -j {config.cpu_count}"
+            f"seqkit locate {fasta} -di -p {barcode_patterns_str} -j {config.cpu_count}"
         )
         primer_command = (
             f"seqkit locate {fasta} -di -f {config.primer_path} -j {config.cpu_count}"
