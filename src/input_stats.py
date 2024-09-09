@@ -16,7 +16,7 @@ class Config:
     primer_path: str
     verbose: bool
     output_path: Path
-    stdout: bool
+    write_to_file: bool
     cpu_count: int = multiprocessing.cpu_count()
 
 
@@ -265,10 +265,10 @@ def main() -> None:
         help="Print seqkit commands and their outputs",
     )
     _ = parser.add_argument(
-        "--stdout",
+        "-w", "--write-to-file",
         action="store_true",
-        default=True,
-        help="Print result to stdout. Default is True.",
+        default=False,
+        help="Write result to a TSV file. Default is False.",
     )
 
     args = parser.parse_args()
@@ -282,7 +282,7 @@ def main() -> None:
         primer_path=args.primer,
         verbose=args.verbose,
         output_path=output_path,
-        stdout=args.stdout,
+        write_to_file=args.write_to_file,
     )
 
     try:
@@ -291,10 +291,11 @@ def main() -> None:
         motif_counts = count_motifs(file_paths)
         result = pd.merge(read_counts, motif_counts, on="file")
 
-        if config.stdout:
-            print(result.to_string(index=False))
-        else:
+        if config.write_to_file:
             result.to_csv(config.output_path / "motif_counts.tsv", sep="\t", index=False)
+            print(f"Results written to {config.output_path / 'motif_counts.tsv'}")
+        else:
+            print(result.to_string(index=False))
 
     except (ValueError, RuntimeError) as e:
         print(f"Error: {str(e)}")
