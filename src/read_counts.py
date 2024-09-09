@@ -55,7 +55,7 @@ def main() -> None:
         read_counts = count_reads(file_paths, multiprocessing.cpu_count())
         output_path = args.output if args.output else args.input_path
         write_output(
-            read_counts.to_csv(sep="\t", index=False, line_terminator="\n"),
+            read_counts.to_csv(sep="\t", index=False, lineterminator="\n"),
             "seqkit_stats.tsv",
             output_path,
         )
