@@ -63,7 +63,9 @@ The following scripts are used within the pipeline:
 usage: read_counts.py [-h] [-o OUTPUT] input_path
 
 Count reads in a directory of input FASTA/FASTQ files using seqkit stats. The
-results are stored as a TSV file in the specified output path. Use -h or
+results are printed to stdout. If an output path is specified, the results are
+also stored as a TSV file in the specified output path. The raw seqkit stats
+output is always saved as 'seqkit_stats.tsv' in the input directory. Use -h or
 --help to show this help message and exit.
 
 positional arguments:
@@ -72,7 +74,8 @@ positional arguments:
 options:
   -h, --help            show this help message and exit
   -o OUTPUT, --output OUTPUT
-                        Output directory path. Default is current directory.
+                        Output directory path. If not specified, no file will
+                        be written.
 ```
 
 ### src/motif_counts.py
