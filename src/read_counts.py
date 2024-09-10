@@ -59,7 +59,6 @@ def main() -> None:
         file_paths = parse_input_path(args.input_path)
         read_counts, raw_output = count_reads(file_paths, multiprocessing.cpu_count())
 
-        write_output(raw_output, "seqkit_stats.tsv", args.input_path)
         if args.output:
             args.output.mkdir(parents=True, exist_ok=True)
             write_output(
@@ -68,7 +67,7 @@ def main() -> None:
                 args.output,
             )
             write_output(raw_output, "seqkit_stats.tsv", args.output)
-        
+
         print(read_counts.to_string(index=False))
 
     except (ValueError, RuntimeError) as e:
