@@ -2,51 +2,66 @@
 
 # Function to display help message
 display_help() {
-    cat << EOF
+    cat <<EOF
 Usage: $0 <input_samplesheet> <fastq1> <fastq2> [options]
 
 Description:
-  This pipeline performs demultiplexing and tracks read count of input and output files as well as read count of found barcodes and primers in paired-end sequencing data.
-  Pipeline high level overview:
-  1. (Optional) Parsing a Novogene samplesheet with a particular format to the default <input_samplesheet> format (tab-delimited).
-     This step may be skipped if <input_samplesheet> is already in the correct format:
-     sample_name<tab>forward_barcode<tab>reverse_barcode<tab>forward_barcode_name<tab>reverse_barcode_name<tab>forward_primer<tab>reverse_primer<tab>primer_name
-  2. Creating barcode and primer pattern FASTA files for demultiplexing and motif counting,
-     and generating a pattern file for copying demultiplexed FASTQs from cutadapt.
-  3. Counting reads in the input FASTQ files with seqkit stats.
-  4. (Optional) Counting motifs using seqkit locate (only if --count-motifs flag is used).
-  5. Demultiplexing with cutadapt (default: combinatorial dual indices, min overlap 3, max error rate 0.14).
-  6. Copying demultiplexed FASTQs according to the pattern file.
-  7. Tracking reads for both output and intermediary demultiplexed FASTQs.
-  8. Creating an Ampliseq-compatible samplesheet for further processing.
+This pipeline performs demultiplexing and tracks read count of input and
+output files as well as read count of found barcodes and primers in
+paired-end sequencing data.
 
-  Note: Default demultiplexing parameters are set for barcodes of length 7. Adjust as needed.
+Pipeline high level overview:
+1. (Optional) Parsing a Novogene samplesheet with a particular format to the
+    default <input_samplesheet> format (tab-delimited). This step may be skipped if
+    <input_samplesheet> is already in the correct tsv format with following
+    columns: sample_name, forward_barcode, reverse_barcode, forward_barcode_name,
+    reverse_barcode_name, forward_primer, reverse_primer, primer_name
+2. Creating barcode and primer pattern FASTA files for demultiplexing and motif
+    counting, and generating a pattern file for copying demultiplexed FASTQs from
+    cutadapt.
+3. Counting reads in the input FASTQ files with seqkit stats.
+4. (Optional) Counting motifs using seqkit locate (only if --count-motifs flag
+    is used).
+5. Demultiplexing with cutadapt (default: combinatorial dual indices, min
+    overlap 3, max error rate 0.14).
+6. Copying demultiplexed FASTQs according to the pattern file.
+7. Tracking reads for both output and intermediary demultiplexed FASTQs.
+8. Creating an Ampliseq-compatible samplesheet for further processing.
+
+Note: Default demultiplexing parameters are set for barcodes of length 7.
 
 Outputs:
-  - Demultiplexed FASTQ files (stored in <output_dir>/demux_renamed/)
-  - Read count reports:
-    * For input FASTQs (stored in <output_dir>/input_data/)
-    * For demultiplexed FASTQs (stored in <output_dir>/demux_renamed/ and <output_dir>/work/fastqs/)
-  - Motif count report (optional, only if --count-motifs is used; stored in <output_dir>/input_data/)
-  - Ampliseq-compatible samplesheet (stored in <output_dir>/demux_renamed/)
-  - Intermediate files (barcodes, primers, patterns) (stored in <output_dir>/work/)
+    - Demultiplexed FASTQ files (stored in <output_dir>/demux_renamed/)
+    - Read count reports:
+        * For input FASTQs (stored in <output_dir>/input_data/)
+        * For demultiplexed FASTQs (stored in <output_dir>/demux_renamed/ and
+          <output_dir>/work/fastqs/)
+    - Motif count report (optional, only if --count-motifs is used; stored in
+        <output_dir>/input_data/)
+    - Ampliseq-compatible samplesheet (stored in <output_dir>/demux_renamed/)
+    - Intermediate files (barcodes, primers, patterns) (stored in
+        <output_dir>/work/)
 
 Arguments:
-  <input_samplesheet>    Path to the input samplesheet
-  <fastq1>               Path to the first FASTQ file (R1)
-  <fastq2>               Path to the second FASTQ file (R2)
+    <input_samplesheet>     Path to the input samplesheet
+    <fastq1>                Path to the first FASTQ file (R1)
+    <fastq2>                Path to the second FASTQ file (R2)
 
 Options:
-  -o, --output <dir>     Output directory for demultiplexed files (default: ./data/demultiplex)
-  -e, --error-rate <rate> Maximum expected error rate (default: 0.14)
-  --min-overlap <int>    Minimum overlap length for adapter matching (default: 3)
-  --novogene-samplesheet Use this flag if the input is a Novogene samplesheet (default: false)
-  -c, --combinatorial    Use combinatorial dual indexes for demultiplexing (default: unique dual indices)
-  --count-motifs         Execute motif counting step (default: false)
-  -h, --help             Display this help message and exit
+    -o, --output <dir>      Output directory for demultiplexed files (default:
+                            ./data/demultiplex)
+    -e, --error-rate <rate> Maximum expected error rate (default: 0.14)
+    --min-overlap <int>     Minimum overlap length for adapter matching
+                            (default: 3)
+    --novogene-samplesheet  Use this flag if the input is a Novogene samplesheet
+                            (default: false)
+    -c, --combinatorial     Use combinatorial dual indexes for demultiplexing
+                            (default: unique dual indices)
+    --count-motifs          Execute motif counting step (default: false)
+    -h, --help              Display this help message and exit
 
 Example:
-  $0 input_samplesheet.tsv R1.fastq.gz R2.fastq.gz -o output_dir -e 0.1 --min-overlap 5 -c --count-motifs
+$0 input_samplesheet.tsv R1.fastq.gz R2.fastq.gz -o output_dir -e 0.1 --min-overlap 5 -c --count-motifs
 EOF
 }
 
