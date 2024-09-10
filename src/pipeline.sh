@@ -126,15 +126,18 @@ if [ ! -f "$FASTQ2" ]; then
     exit 1
 fi
 
+echo "(1/10) Creating directories"
 INPUT_DIR=$(dirname "$FASTQ1")
+INPUT_DATA="$DEMUX_PATH/input_data"
+WORK_DIR="$DEMUX_PATH/work"
 
-echo "(1/10) Counting reads in multiplex data"
-python demultiplex-scripts/src/read_counts.py "$INPUT_DIR/" \
-    >"$INPUT_DIR/read_counts.tsv"
-
-echo "(2/10) Creating directories"
 mkdir -p "$DEMUX_PATH"
-mkdir -p "$DEMUX_PATH/work"
+mkdir -p "$WORK_DIR"
+mkdir -p "$WORK_DIR"
+
+echo "(2/10) Counting reads in multiplex data"
+python demultiplex-scripts/src/read_counts.py "$INPUT_DIR/" \
+    >"$INPUT_DATA/read_counts.tsv"
 
 echo "(3/10) Parsing samplesheet and generating barcodes"
 if [ "$NOVOGENE_SAMPLESHEET" = true ]; then
@@ -144,23 +147,23 @@ if [ "$NOVOGENE_SAMPLESHEET" = true ]; then
 else
     cp "$INPUT_SAMPLESHEET" "$DEMUX_PATH/input_samplesheet.tsv"
 fi
-python demultiplex-scripts/src/barcodes_to_fasta.py -o "$DEMUX_PATH/work/" \
+python demultiplex-scripts/src/barcodes_to_fasta.py -o "$WORK_DIR/" \
     <"$DEMUX_PATH/input_samplesheet.tsv"
 
 echo "(4/10) Concatenating barcodes and primers"
-cat "$DEMUX_PATH/work/barcodes_fwd.fasta" "$DEMUX_PATH/work/barcodes_rev.fasta" \
-    >"$DEMUX_PATH/work/barcodes.fasta"
-cat "$DEMUX_PATH/work/primers_fwd.fasta" "$DEMUX_PATH/work/primers_rev.fasta" \
-    >"$DEMUX_PATH/work/primers.fasta"
+cat "$WORK_DIR/barcodes_fwd.fasta" "$WORK_DIR/barcodes_rev.fasta" \
+    >"$WORK_DIR/barcodes.fasta"
+cat "$WORK_DIR/primers_fwd.fasta" "$WORK_DIR/primers_rev.fasta" \
+    >"$WORK_DIR/primers.fasta"
 
 if [ "$COUNT_MOTIFS" = true ]; then
     echo "(5/10) Counting motifs"
     python demultiplex-scripts/src/motif_counts.py \
         "$INPUT_DIR/" \
-        "$DEMUX_PATH/work/barcodes.fasta" \
-        "$DEMUX_PATH/work/primers.fasta" \
-        -o "$DEMUX_PATH/work" \
-        >"$INPUT_DIR/motif_counts.tsv"
+        "$WORK_DIR/barcodes.fasta" \
+        "$WORK_DIR/primers.fasta" \
+        -o "$WORK_DIR" \
+        >"$INPUT_DATA/motif_counts.tsv"
 else
     echo "(5/10) Skipping motif counting"
 fi
@@ -169,9 +172,9 @@ echo "(6/10) Demultiplexing"
 DEMUX_COMMAND="python demultiplex-scripts/src/demultiplex.py \
     \"$FASTQ1\" \
     \"$FASTQ2\" \
-    \"$DEMUX_PATH/work/barcodes_fwd.fasta\" \
-    \"$DEMUX_PATH/work/barcodes_rev.fasta\" \
-    -o \"$DEMUX_PATH/work\" \
+    \"$WORK_DIR/barcodes_fwd.fasta\" \
+    \"$WORK_DIR/barcodes_rev.fasta\" \
+    -o \"$WORK_DIR\" \
     -e \"${ERROR_RATE}\" \
     --min-overlap \"${MIN_OVERLAP}\""
 
@@ -182,17 +185,17 @@ fi
 eval "$DEMUX_COMMAND"
 
 echo "(7/10) Copying patterns"
-python demultiplex-scripts/src/patterns_copy.py -o "$DEMUX_PATH/demux_renamed" <"$DEMUX_PATH/work/patterns.txt"
+python demultiplex-scripts/src/patterns_copy.py -o "$DEMUX_PATH/demux_renamed" <"$WORK_DIR/patterns.txt"
 
 echo "(8/10) Moving fastq files"
-mkdir -p "$DEMUX_PATH/work/fastqs/"
-mv "$DEMUX_PATH"/work/*.fastq.gz "$DEMUX_PATH/work/fastqs/"
+mkdir -p "$WORK_DIR/fastqs/"
+mv "$DEMUX_PATH"/work/*.fastq.gz "$WORK_DIR/fastqs/"
 
 echo "(9/10) Counting reads in demultiplexed data"
 python demultiplex-scripts/src/read_counts.py "$DEMUX_PATH/demux_renamed/" \
     >"$DEMUX_PATH/demux_renamed/read_counts.tsv"
-python demultiplex-scripts/src/read_counts.py "$DEMUX_PATH/work/fastqs/" \
-    >"$DEMUX_PATH/work/fastqs/read_counts.tsv"
+python demultiplex-scripts/src/read_counts.py "$WORK_DIR/fastqs/" \
+    >"$WORK_DIR/fastqs/read_counts.tsv"
 
 echo "(10/10) Generating ampliseq samplesheet"
 python demultiplex-scripts/src/ampliseq_samplesheet_gen.py "$DEMUX_PATH/demux_renamed" \
