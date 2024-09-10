@@ -49,6 +49,8 @@ def run_cutadapt(
             f"-G ^file:{reverse_fasta} "
             f"-o '{output_dir}/demux-{{name1}}-{{name2}}.1.fastq.gz' "
             f"-p '{output_dir}/demux-{{name1}}-{{name2}}.2.fastq.gz' "
+            f"--json {output_dir}/report.json "
+            f"--info-file {output_dir}/cutadapt-info.tsv "
             f"{fq_gz_1} "
             f"{fq_gz_2} "
         )
@@ -60,6 +62,8 @@ def run_cutadapt(
             f"-G ^file:{reverse_fasta} "
             f"-o '{output_dir}/demux-{{name}}.1.fastq.gz' "
             f"-p '{output_dir}/demux-{{name}}.2.fastq.gz' "
+            f"--json {output_dir}/report.json "
+            f"--info-file {output_dir}/cutadapt-info.tsv "
             f"{fq_gz_1} "
             f"{fq_gz_2} "
         )
