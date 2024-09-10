@@ -36,8 +36,9 @@ def main() -> None:
     parser = argparse.ArgumentParser(
         description="Count reads in a directory of input FASTA/FASTQ files using seqkit stats. "
         "The results are printed to stdout. If an output path is specified, "
-        "the results are also stored as a TSV file in the specified output path. "
-        "The raw seqkit stats output is always saved as 'seqkit_stats.tsv' in the input directory. "
+        "the results are stored as 'read_counts.tsv' in the specified output path. "
+        "The raw seqkit stats output is saved as 'seqkit_stats.tsv' in both the input "
+        "directory and the output directory (if specified). "
         "Use -h or --help to show this help message and exit."
     )
     _ = parser.add_argument(
@@ -48,7 +49,7 @@ def main() -> None:
     _ = parser.add_argument(
         "-o",
         "--output",
-        help="Output directory path. If not specified, no file will be written.",
+        help="Output directory path. If not specified, only stdout output is produced.",
         type=Path,
     )
 
@@ -60,13 +61,15 @@ def main() -> None:
 
         write_output(raw_output, "seqkit_stats.tsv", args.input_path)
         if args.output:
+            args.output.mkdir(parents=True, exist_ok=True)
             write_output(
                 read_counts.to_csv(sep="\t", index=False, lineterminator="\n"),
                 "read_counts.tsv",
                 args.output,
             )
-        else:
-            print(read_counts.to_string(index=False))
+            write_output(raw_output, "seqkit_stats.tsv", args.output)
+        
+        print(read_counts.to_string(index=False))
 
     except (ValueError, RuntimeError) as e:
         print(f"Error: {str(e)}")
