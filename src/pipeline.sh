@@ -24,9 +24,9 @@ display_help() {
     echo "Outputs:"
     echo "  - Demultiplexed FASTQ files (stored in <output_dir>/demux_renamed/)"
     echo "  - Read count reports:"
-    echo "    * For input FASTQs (stored in the input FASTQ directory)"
+    echo "    * For input FASTQs (stored in <output_dir>/input_data/)"
     echo "    * For demultiplexed FASTQs (stored in <output_dir>/demux_renamed/ and <output_dir>/work/fastqs/)"
-    echo "  - Motif count report (stored in the input FASTQ directory)"
+    echo "  - Motif count report (optional, only if --count-motifs is used; stored in <output_dir>/input_data/)"
     echo "  - Ampliseq-compatible samplesheet (stored in <output_dir>/demux_renamed/)"
     echo "  - Intermediate files (barcodes, primers, patterns) (stored in <output_dir>/work/)"
     echo
