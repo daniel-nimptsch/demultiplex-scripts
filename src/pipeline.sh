@@ -164,7 +164,7 @@ if [ "$NOVOGENE_SAMPLESHEET" = true ]; then
     INPUT_SAMPLESHEET="$DEMUX_PATH/input_samplesheet.tsv"
 fi
 python demultiplex-scripts/src/barcodes_to_fasta.py -o "$WORK_DIR/" \
-    <"$DEMUX_PATH/input_samplesheet.tsv"
+    <"$INPUT_SAMPLESHEET"
 
 echo "(4/10) Concatenating barcodes and primers"
 cat "$WORK_DIR/barcodes_fwd.fasta" "$WORK_DIR/barcodes_rev.fasta" \
