@@ -5,15 +5,15 @@ display_help() {
     echo "Usage: $0 <input_samplesheet> <fastq1> <fastq2> [options]"
     echo
     echo "Description:"
-    echo "  This pipeline performs demultiplexing and analysis of paired-end sequencing data."
-    echo "  The process includes:"
-    echo "  1. (Optional) Parsing the Novogene samplesheet to the default INPUT_SAMPLESHEET format (tab-delimited)."
-    echo "     This step may be skipped if INPUT_SAMPLESHEET is already in the correct format:"
+    echo "  This pipeline performs demultiplexing and tracks read count of input and output files as well as read count of found barcods and primers in paired-end seuqncing data."
+    echo "  Pipeline high level overview:"
+    echo "  1. (Optional) Parsing a Novogene samplesheet with a particular format to the default <input_samplesheet> format (tab-delimited)."
+    echo "     This step may be skipped if <input_samplesheet> is already in the correct format:"
     echo "     sample_name<tab>forward_barcode<tab>reverse_barcode<tab>forward_barcode_name<tab>reverse_barcode_name<tab>forward_primer<tab>reverse_primer<tab>primer_name"
-    echo "  2. Creating barcode and primer FASTA files for demultiplexing and motif counting,"
-    echo "     and generating a pattern file for copying demultiplexed FASTQs."
-    echo "  3. Counting reads in the input FASTQ files."
-    echo "  4. Counting motifs using seqkit."
+    echo "  2. Creating barcode and primer pattern FASTA files for demultiplexing and motif counting,"
+    echo "     and generating a pattern file for copying demultiplexed FASTQs from cutadapt."
+    echo "  3. Counting reads in the input FASTQ files with seqkit stats."
+    echo "  4. Counting motifs using seqkit locate."
     echo "  5. Demultiplexing with cutadapt (default: combinatorial dual indices, min overlap 3, max error rate 0.14)."
     echo "  6. Copying demultiplexed FASTQs according to the pattern file."
     echo "  7. Tracking reads for both output and intermediary demultiplexed FASTQs."
@@ -39,8 +39,8 @@ display_help() {
     echo "  -o, --output <dir>     Output directory for demultiplexed files (default: ./data/demultiplex)"
     echo "  -e, --error-rate <rate> Maximum expected error rate (default: 0.14)"
     echo "  --min-overlap <int>    Minimum overlap length for adapter matching (default: 3)"
-    echo "  --novogene-samplesheet Use this flag if the input is a Novogene samplesheet"
-    echo "  -c, --combinatorial    Use combinatorial dual indexes for demultiplexing"
+    echo "  --novogene-samplesheet Use this flag if the input is a Novogene samplesheet (default: false)"
+    echo "  -c, --combinatorial    Use combinatorial dual indexes for demultiplexing (default: unique dual indices)"
     echo "  -h, --help             Display this help message and exit"
     echo
     echo "Example:"
@@ -169,7 +169,7 @@ if [ "$COMBINATORIAL" = true ]; then
     DEMUX_COMMAND+=" -c"
 fi
 
-eval $DEMUX_COMMAND
+eval "$DEMUX_COMMAND"
 
 echo "(7/10) Copying patterns"
 python demultiplex-scripts/src/patterns_copy.py -o "$DEMUX_PATH/demux_renamed" <"$DEMUX_PATH/work/patterns.txt"
