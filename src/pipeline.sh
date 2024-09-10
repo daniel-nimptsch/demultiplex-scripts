@@ -161,8 +161,7 @@ if [ "$NOVOGENE_SAMPLESHEET" = true ]; then
     python demultiplex-scripts/src/parse_samplesheet_novogene.py \
         "$INPUT_SAMPLESHEET" \
         >"$DEMUX_PATH/input_samplesheet.tsv"
-else
-    cp "$INPUT_SAMPLESHEET" "$DEMUX_PATH/input_samplesheet.tsv"
+    INPUT_SAMPLESHEET="$DEMUX_PATH/input_samplesheet.tsv"
 fi
 python demultiplex-scripts/src/barcodes_to_fasta.py -o "$WORK_DIR/" \
     <"$DEMUX_PATH/input_samplesheet.tsv"
@@ -198,7 +197,6 @@ DEMUX_COMMAND="python demultiplex-scripts/src/demultiplex.py \
 if [ "$COMBINATORIAL" = true ]; then
     DEMUX_COMMAND+=" -c"
 fi
-
 eval "$DEMUX_COMMAND"
 
 echo "(7/10) Copying patterns"
