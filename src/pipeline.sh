@@ -41,10 +41,11 @@ display_help() {
     echo "  --min-overlap <int>    Minimum overlap length for adapter matching (default: 3)"
     echo "  --novogene-samplesheet Use this flag if the input is a Novogene samplesheet (default: false)"
     echo "  -c, --combinatorial    Use combinatorial dual indexes for demultiplexing (default: unique dual indices)"
+    echo "  --count-motifs         Execute motif counting step (default: false)"
     echo "  -h, --help             Display this help message and exit"
     echo
     echo "Example:"
-    echo "  $0 input_samplesheet.tsv R1.fastq.gz R2.fastq.gz -o output_dir -e 0.1 --min-overlap 5 -c"
+    echo "  $0 input_samplesheet.tsv R1.fastq.gz R2.fastq.gz -o output_dir -e 0.1 --min-overlap 5 -c --count-motifs"
 }
 
 # Set default values
@@ -53,6 +54,7 @@ ERROR_RATE=0.14
 MIN_OVERLAP=3
 NOVOGENE_SAMPLESHEET=false
 COMBINATORIAL=false
+COUNT_MOTIFS=false
 
 # Parse command-line arguments
 while [[ $# -gt 0 ]]; do
@@ -60,6 +62,10 @@ while [[ $# -gt 0 ]]; do
     -h | --help)
         display_help
         exit 0
+        ;;
+    --count-motifs)
+        COUNT_MOTIFS=true
+        shift
         ;;
     -o | --output)
         DEMUX_PATH="$2"
@@ -147,13 +153,17 @@ cat "$DEMUX_PATH/work/barcodes_fwd.fasta" "$DEMUX_PATH/work/barcodes_rev.fasta" 
 cat "$DEMUX_PATH/work/primers_fwd.fasta" "$DEMUX_PATH/work/primers_rev.fasta" \
     >"$DEMUX_PATH/work/primers.fasta"
 
-echo "(5/10) Counting motifs"
-python demultiplex-scripts/src/motif_counts.py \
-    "$INPUT_DIR/" \
-    "$DEMUX_PATH/work/barcodes.fasta" \
-    "$DEMUX_PATH/work/primers.fasta" \
-    -o "$DEMUX_PATH/work" \
-    >"$INPUT_DIR/motif_counts.tsv"
+if [ "$COUNT_MOTIFS" = true ]; then
+    echo "(5/10) Counting motifs"
+    python demultiplex-scripts/src/motif_counts.py \
+        "$INPUT_DIR/" \
+        "$DEMUX_PATH/work/barcodes.fasta" \
+        "$DEMUX_PATH/work/primers.fasta" \
+        -o "$DEMUX_PATH/work" \
+        >"$INPUT_DIR/motif_counts.tsv"
+else
+    echo "(5/10) Skipping motif counting"
+fi
 
 echo "(6/10) Demultiplexing"
 DEMUX_COMMAND="python demultiplex-scripts/src/demultiplex.py \
