@@ -4,7 +4,8 @@ from pathlib import Path
 
 def parse_input_path(input_path: Path) -> list[Path]:
     """
-    Parse files in the input path, ensure they are paired-end, and return their file paths.
+    Parse files in the input path, ensure they are paired-end, and return their
+    file paths.
 
     Args:
         input_path (Path): Path to the directory containing FASTA/FASTQ files
@@ -13,7 +14,8 @@ def parse_input_path(input_path: Path) -> list[Path]:
         list[Path]: List of Path objects for valid paired-end FASTA/FASTQ files
 
     Raises:
-        ValueError: If no valid files are found, file endings are not identical, not in accepted formats, or not paired-end
+        ValueError: If no valid files are found, file endings are not
+        identical, not in accepted formats, or not paired-end
     """
     accepted_endings = {"fasta", "fastq", "fq", "fa", "fna"}
     file_list: list[Path] = []
@@ -54,6 +56,7 @@ def parse_input_path(input_path: Path) -> list[Path]:
         )
     return file_list
 
+
 def write_output(output: str, filename: str, output_path: Path) -> None:
     """
     Write the given output to a file in the specified output path.
@@ -61,7 +64,8 @@ def write_output(output: str, filename: str, output_path: Path) -> None:
     Args:
         output (str): The content to write to the file.
         filename (str): The name of the file to create.
-        output_path (Path): The directory path where the file should be created.
+        output_path (Path): The directory path where the file should be
+        created.
     """
     with open(output_path / filename, "w") as f:
         _ = f.write(output)
