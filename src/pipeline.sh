@@ -150,7 +150,7 @@ WORK_DIR="$DEMUX_PATH/work"
 
 mkdir -p "$DEMUX_PATH"
 mkdir -p "$WORK_DIR"
-mkdir -p "$WORK_DIR"
+mkdir -p "$INPUT_DATA"
 
 echo "(2/10) Counting reads in multiplex data"
 python demultiplex-scripts/src/read_counts.py "$INPUT_DIR/" \
