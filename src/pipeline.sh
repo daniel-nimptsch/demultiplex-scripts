@@ -5,7 +5,7 @@ display_help() {
     echo "Usage: $0 <input_samplesheet> <fastq1> <fastq2> [options]"
     echo
     echo "Description:"
-    echo "  This pipeline performs demultiplexing and tracks read count of input and output files as well as read count of found barcods and primers in paired-end seuqncing data."
+    echo "  This pipeline performs demultiplexing and tracks read count of input and output files as well as read count of found barcodes and primers in paired-end sequencing data."
     echo "  Pipeline high level overview:"
     echo "  1. (Optional) Parsing a Novogene samplesheet with a particular format to the default <input_samplesheet> format (tab-delimited)."
     echo "     This step may be skipped if <input_samplesheet> is already in the correct format:"
@@ -13,7 +13,7 @@ display_help() {
     echo "  2. Creating barcode and primer pattern FASTA files for demultiplexing and motif counting,"
     echo "     and generating a pattern file for copying demultiplexed FASTQs from cutadapt."
     echo "  3. Counting reads in the input FASTQ files with seqkit stats."
-    echo "  4. Counting motifs using seqkit locate."
+    echo "  4. (Optional) Counting motifs using seqkit locate (only if --count-motifs flag is used)."
     echo "  5. Demultiplexing with cutadapt (default: combinatorial dual indices, min overlap 3, max error rate 0.14)."
     echo "  6. Copying demultiplexed FASTQs according to the pattern file."
     echo "  7. Tracking reads for both output and intermediary demultiplexed FASTQs."
