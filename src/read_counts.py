@@ -35,10 +35,10 @@ def count_reads(file_paths: list[Path], cpu_count: int) -> tuple[pd.DataFrame, s
 def main() -> None:
     parser = argparse.ArgumentParser(
         description="Count reads in a directory of input FASTA/FASTQ files using seqkit stats. "
-        "The results are printed to stdout. If an output path is specified, "
-        "the results are stored as 'read_counts.tsv' in the specified output path. "
-        "The raw seqkit stats output is saved as 'seqkit_stats.tsv' in both the input "
-        "directory and the output directory (if specified). "
+        "The results are always printed to stdout. If an output path is specified, "
+        "the results are also stored as 'read_counts.tsv' in the specified output path. "
+        "The raw seqkit stats output is saved as 'seqkit_stats.tsv' in the output "
+        "directory (if specified). "
         "Use -h or --help to show this help message and exit."
     )
     _ = parser.add_argument(
