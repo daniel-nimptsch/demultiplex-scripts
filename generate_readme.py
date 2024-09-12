@@ -32,6 +32,21 @@ def main():
 This repository contains scripts to demultiplex sequencing data using
 cutadapt and to generate a sample sheet for nf-core/ampliseq.
 
+## Installation
+
+Install the required dependencies with either conda or mamba. Use:
+`environment.yml`. For example:
+
+```bash
+mamba env create -f environment.yml
+```
+
+Activate the env before executing the pipeline:
+
+```bash
+mamba activate demultiplex-scripts
+```
+
 ## Usage
 
 The main pipeline script is `src/pipeline.sh`. Here's its usage information:

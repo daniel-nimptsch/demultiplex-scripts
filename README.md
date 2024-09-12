@@ -3,6 +3,21 @@
 This repository contains scripts to demultiplex sequencing data using
 cutadapt and to generate a sample sheet for nf-core/ampliseq.
 
+## Installation
+
+Install the required dependencies with either conda or mamba. Use:
+`environment.yml`. For example:
+
+```bash
+mamba env create -f environment.yml
+```
+
+Activate the env before executing the pipeline:
+
+```bash
+mamba activate demultiplex-scripts
+```
+
 ## Usage
 
 The main pipeline script is `src/pipeline.sh`. Here's its usage information:
@@ -76,11 +91,43 @@ The following scripts are used within the pipeline:
 ### src/read_counts.py
 
 ```
+usage: read_counts.py [-h] [-o OUTPUT] input_path
+
+Count reads in a directory of input FASTA/FASTQ files using seqkit stats. The
+results are always printed to stdout. If an output path is specified, the
+results are also stored as 'read_counts.tsv' in the specified output path. The
+raw seqkit stats output is saved as 'seqkit_stats.tsv' in the output directory
+(if specified). Use -h or --help to show this help message and exit.
+
+positional arguments:
+  input_path            Path to the directory containing FASTA/FASTQ files
+
+options:
+  -h, --help            show this help message and exit
+  -o OUTPUT, --output OUTPUT
+                        Output directory path. If not specified, only stdout
+                        output is produced.
 ```
 
 ### src/motif_counts.py
 
 ```
+usage: motif_counts.py [-h] [-o OUTPUT] [-v] [-w] input_path barcode primer
+
+Count subset of reads with specific adapter or primer sequences in input
+FASTA/FASTQ files.
+
+positional arguments:
+  input_path            Path to the input path with fastq files.
+  barcode               Path to the barcode FASTA file
+  primer                Path to the primer FASTA file
+
+options:
+  -h, --help            show this help message and exit
+  -o OUTPUT, --output OUTPUT
+                        Output directory path. Default is current directory.
+  -v, --verbose         Print seqkit commands and their outputs
+  -w, --write-to-file   Write result to a TSV file. Default is False.
 ```
 
 ### src/parse_samplesheet_novogene.py
