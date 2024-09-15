@@ -117,20 +117,25 @@ def save_patterns(barcodes, output_dir):
 
 def main():
     parser = argparse.ArgumentParser(
+        formatter_class=argparse.RawDescriptionHelpFormatter,
         description=(
-            """
-            Generate FASTA files from a samplesheet (TSV) containing sample
-            names and barcodes. The samplesheet should be tab-delimited with
-            the following format: sample name, forward barcode, reverse
-            barcode, forward barcode name, reverse barcode name, forward primer,
-            reverse primer, and primer name.
+            """Generate FASTA files from a samplesheet (TSV) containing sample
+names and barcodes.
 
-            Additionally a patterns file is generated for the use after
-            cutadapts demultiplex of paired-end reads with combinatorial dual
-            indexes. The patterns file can be used as input with
-            patterns_copy.py.
-            """
-        )
+The samplesheet should be tab-delimited with the following columns:
+- sample name
+- forward barcode
+- reverse barcode
+- forward barcode name
+- reverse barcode name
+- forward primer
+- reverse primer
+
+Additionally a patterns file is generated for the use after cutadapts
+demultiplex of paired-end reads with combinatorial dual indexes. The patterns
+file can be used as input with patterns_copy.py.
+"""
+        ),
     )
     parser.add_argument(
         "--include-primers",
@@ -150,7 +155,7 @@ def main():
         "--output",
         type=str,
         default=".",
-        help="Directory to save the output FASTA files (default: ./)",
+        help="Directory to save the output FASTA files and patterns.txt (default: ./)",
     )
 
     args = parser.parse_args()
