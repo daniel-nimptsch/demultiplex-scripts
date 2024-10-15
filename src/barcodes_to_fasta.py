@@ -69,25 +69,25 @@ def create_fasta(barcodes, output_dir, include_primers):
             reverse_primer,
             primer_name,
         ) in barcodes:
-            if forward_barcode not in seen_forward_barcodes:
-                seen_forward_barcodes.add(forward_barcode)
+            if forward_barcode.upper() not in seen_forward_barcodes:
+                seen_forward_barcodes.add(forward_barcode.upper())
                 if include_primers:
                     forward_barcode += forward_primer
                 fwd_file.write(f">{forward_barcode_name}\n{forward_barcode}\n")
 
-            if reverse_barcode not in seen_reverse_barcodes:
-                seen_reverse_barcodes.add(reverse_barcode)
+            if reverse_barcode.upper() not in seen_reverse_barcodes:
+                seen_reverse_barcodes.add(reverse_barcode.upper())
                 if include_primers:
                     reverse_barcode += reverse_primer
                 rev_file.write(f">{reverse_barcode_name}\n{reverse_barcode}\n")
 
             if not include_primers:
-                if forward_primer not in seen_forward_primers:
-                    seen_forward_primers.add(forward_primer)
+                if forward_primer.upper() not in seen_forward_primers:
+                    seen_forward_primers.add(forward_primer.upper())
                     fwd_primer_file.write(f">forward_{primer_name}\n{forward_primer}\n")
 
-                if reverse_primer not in seen_reverse_primers:
-                    seen_reverse_primers.add(reverse_primer)
+                if reverse_primer.upper() not in seen_reverse_primers:
+                    seen_reverse_primers.add(reverse_primer.upper())
                     rev_primer_file.write(f">reverse_{primer_name}\n{reverse_primer}\n")
 
     return forward_fasta, reverse_fasta, forward_primer_fasta, reverse_primer_fasta
