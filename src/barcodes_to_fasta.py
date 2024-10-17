@@ -4,6 +4,7 @@ import sys
 from pathlib import Path
 
 
+# TODO: add a samplename sanitation function that transforms . in filenames to _
 def parse_samplesheet(samplesheet_file):
     barcodes = []
     if samplesheet_file == sys.stdin:

@@ -1,5 +1,5 @@
-import os
 import argparse
+import os
 
 
 def parse_directory(directory):
@@ -24,6 +24,7 @@ def generate_output(sample_dict, args):
     return output
 
 
+# TODO: add a feature to generate several samplesheets depending if there are more than one primers in the input samplesheet
 def main():
     parser = argparse.ArgumentParser(
         description="""
